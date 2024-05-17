@@ -6,7 +6,6 @@ import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.services.employee.EmployeeService;
 import com.web.back.services.jwt.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,12 +26,11 @@ public class EmployeeController {
     }
 
     @GetMapping(value = "getAll")
-    public Mono<ResponseEntity<CustomResponse<List<EmployeeApiResponse>>>> getAll(String beginDate, String endDate, String sociedad, String areaNomina, String token) {
+    public Mono<CustomResponse<List<EmployeeApiResponse>>> getAll(String beginDate, String endDate, String sociedad, String areaNomina, String token) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(token))) {
-            return Mono.just(ResponseEntity.ok(new CustomResponse<List<EmployeeApiResponse>>().forbidden("No cuentas con los permisos para utilizar esta función")));
+            return Mono.just(new CustomResponse<List<EmployeeApiResponse>>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
-        return employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, token)
-                .map(ResponseEntity::ok);
+        return employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, token);
     }
 }

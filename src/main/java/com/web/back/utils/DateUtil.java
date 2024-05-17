@@ -13,7 +13,9 @@ public class DateUtil {
         return sdf.format(date);
     }
 
-    public static String clearHyphens(String dateString){
-        return dateString.replace("-", "");
+    public static String clearSymbols(String dateString){
+        return dateString.replace("-", "")
+                .replace(":", "")
+                .replace(" ", "");
     }
 }

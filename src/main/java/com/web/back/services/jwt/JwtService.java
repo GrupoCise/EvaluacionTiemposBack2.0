@@ -1,6 +1,5 @@
 package com.web.back.services.jwt;
 
-import com.web.back.model.entities.Profile;
 import com.web.back.model.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -13,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
