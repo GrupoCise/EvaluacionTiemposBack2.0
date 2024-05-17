@@ -1,15 +1,16 @@
 package com.web.back.controllers.user;
 
 import com.web.back.filters.PermissionsFilter;
-import com.web.back.model.entities.User;
+import com.web.back.mappers.UserDtoMapper;
+import com.web.back.model.dto.UserDto;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.model.requests.user.RegisterUserRequest;
-import com.web.back.model.requests.user.UserUpdateRequest;
+import com.web.back.model.requests.RegisterUserRequest;
+import com.web.back.model.requests.UserUpdateRequest;
 import com.web.back.services.jwt.JwtService;
 import com.web.back.services.user.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -26,55 +27,64 @@ public class UserController {
     }
 
     @PostMapping(value = "register")
-    public ResponseEntity<CustomResponse<User>> register(@RequestHeader("Authorization") String bearerToken, @RequestBody RegisterUserRequest request) {
+    public Mono<CustomResponse<UserDto>> register(@RequestHeader("Authorization") String bearerToken, @RequestBody RegisterUserRequest request) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<User>().forbidden());
+            return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
 
-        return ResponseEntity.ok(userService.register(request));
+        return userService.register(request)
+                .map(user -> new CustomResponse<UserDto>().ok(UserDtoMapper.mapFrom(user)))
+                .doOnError(ex -> new CustomResponse<UserDto>().badRequest(ex.getMessage()));
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<CustomResponse<User>> update(@RequestHeader("Authorization") String bearerToken, @PathVariable String id, @RequestBody UserUpdateRequest request) {
+    @PutMapping("update/{userName}")
+    public Mono<CustomResponse<UserDto>> update(@RequestHeader("Authorization") String bearerToken, @PathVariable String userName, @RequestBody UserUpdateRequest request) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<User>().forbidden());
+            return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
 
-        return ResponseEntity.ok(userService.update(id, request));
+        return userService.update(userName, request)
+                .map(user -> new CustomResponse<UserDto>().ok(UserDtoMapper.mapFrom(user)))
+                .doOnError(ex -> new CustomResponse<UserDto>().badRequest(ex.getMessage()));
     }
 
-    @PutMapping("disable/{id}")
-    public ResponseEntity<CustomResponse<User>> disable(@RequestHeader("Authorization") String bearerToken, @PathVariable String id) {
+    @PutMapping("disable/{userName}")
+    public Mono<CustomResponse<UserDto>> disable(@RequestHeader("Authorization") String bearerToken, @PathVariable String userName) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<User>().forbidden());
+            return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
-        return ResponseEntity.ok(userService.updateStatus(id, false));
+
+        return userService.updateStatus(userName, false)
+                .map(user -> new CustomResponse<UserDto>().ok(UserDtoMapper.mapFrom(user)));
     }
 
-    @PutMapping("enable/{id}/")
-    public ResponseEntity<CustomResponse<User>> enable(@RequestHeader("Authorization") String bearerToken, @PathVariable String id) {
+    @PutMapping("enable/{userName}")
+    public Mono<CustomResponse<UserDto>> enable(@RequestHeader("Authorization") String bearerToken, @PathVariable String userName) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<User>().forbidden());
+            return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
-        return ResponseEntity.ok(userService.updateStatus(id, true));
+
+        return userService.updateStatus(userName, true)
+                .map(user -> new CustomResponse<UserDto>().ok(UserDtoMapper.mapFrom(user)));
     }
 
     @GetMapping(value = "getAll")
-    public ResponseEntity<CustomResponse<List<User>>> getAll(@RequestHeader("Authorization") String bearerToken, Boolean isActive) {
+    public Mono<CustomResponse<List<UserDto>>> getAll(@RequestHeader("Authorization") String bearerToken, Boolean isActive) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<User>>().forbidden());
+            return Mono.just(new CustomResponse<List<UserDto>>().forbidden());
         }
-        return ResponseEntity.ok(userService.getUsersByStatus(isActive));
+        return userService.getUsersByStatus(isActive)
+                .map(users -> users.stream().map(UserDtoMapper::mapFrom).toList())
+                .map(usersDto -> new CustomResponse<List<UserDto>>().ok(usersDto));
     }
 
-    @GetMapping("getOne/{id}")
-    public ResponseEntity<CustomResponse<User>> getOne(@RequestHeader("Authorization") String bearerToken, @PathVariable String id) {
+    @GetMapping("getOne/{userName}")
+    public Mono<CustomResponse<UserDto>> getOne(@RequestHeader("Authorization") String bearerToken, @PathVariable String userName) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<User>().forbidden());
+            return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
 
-        return ResponseEntity.ok(new CustomResponse<User>().ok(
-                userService.getByUserName(id).orElse(null
-                )));
+        return Mono.just(new CustomResponse<UserDto>().ok(
+                UserDtoMapper.mapFrom(userService.getByUserName(userName))));
     }
 }

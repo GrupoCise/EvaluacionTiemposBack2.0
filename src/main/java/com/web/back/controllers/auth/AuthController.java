@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,7 +29,7 @@ public class AuthController {
 
 
     @PostMapping("/changePassword")
-    public ResponseEntity<CustomResponse<String>> changePassword(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.changePassword(request));
+    public Mono<CustomResponse<String>> changePassword(@RequestBody LoginRequest request) {
+        return authService.changePassword(request);
     }
 }

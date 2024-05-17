@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -58,11 +59,12 @@ public class AuthService {
         return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
     }
 
-    public CustomResponse<String> changePassword(LoginRequest request) {
+    public Mono<CustomResponse<String>> changePassword(LoginRequest request) {
         try {
-            return userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()));
+            return userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()))
+                    .map(result -> new CustomResponse<String>().ok(result));
         } catch (NoSuchElementException e) {
-            return new CustomResponse<String>().badRequest("User doesn't exist");
+            return Mono.just(new CustomResponse<String>().badRequest("User doesn't exist"));
         }
     }
 

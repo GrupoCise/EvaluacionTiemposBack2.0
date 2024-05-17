@@ -1,4 +1,4 @@
-package com.web.back.model.requests.user;
+package com.web.back.model.requests;
 
 import lombok.*;
 

@@ -4,17 +4,16 @@ import com.web.back.model.entities.Profile;
 import com.web.back.model.entities.User;
 import com.web.back.model.entities.UserProfile;
 import com.web.back.model.entities.UserProfileId;
-import com.web.back.model.responses.CustomResponse;
-import com.web.back.model.requests.user.RegisterUserRequest;
-import com.web.back.model.requests.user.UserUpdateRequest;
+import com.web.back.model.requests.RegisterUserRequest;
+import com.web.back.model.requests.UserUpdateRequest;
 import com.web.back.repositories.ProfileRepository;
 import com.web.back.repositories.UserProfileRepository;
 import com.web.back.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,11 +34,11 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<User> register(RegisterUserRequest request) {
+    public Mono<User> register(RegisterUserRequest request) {
 
         var error = validateUserRegisterRequest(request);
         if (error != null) {
-            return new CustomResponse<User>().badRequest(error);
+            return Mono.error(new Throwable(error));
         }
 
         User user = new User();
@@ -53,7 +52,7 @@ public class UserService {
 
         saveUserProfiles(user, request.getProfiles());
 
-        return new CustomResponse<User>().ok(user);
+        return Mono.just(user);
     }
 
     @Transactional(rollbackFor = {Exception.class})
@@ -76,14 +75,12 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<User> update(String id, UserUpdateRequest userUpdate) {
+    public Mono<User> update(String userName, UserUpdateRequest userUpdate) {
         if (!userUpdate.isLongEnough()) {
-            return new CustomResponse<User>().badRequest(
-                    "ERROR: The fields should be filled with 8 characters long"
-            );
+            return Mono.error(new Throwable("ERROR: The fields should be filled with 8 characters long"));
         }
 
-        User user = userRepository.findByUsername(id).get();
+        User user = userRepository.findByUsername(userName).get();
         user = userUpdate.changeUser(user);
 
         userRepository.save(user);
@@ -91,35 +88,35 @@ public class UserService {
         userProfileRepository.deleteByUser(user);
         saveUserProfiles(user, userUpdate.getProfiles());
 
-        return new CustomResponse<User>().ok(user);
+        return Mono.just(user);
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<List<User>> getUsersByStatus(boolean status) {
-        List<User> listOfUsers = userRepository.findAllByActive(status).get();
-
-        return new CustomResponse<List<User>>().ok(listOfUsers);
+    public Mono<List<User>> getUsersByStatus(boolean status) {
+        return Mono.just(userRepository.findAllByActive(status).get());
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<User> updateStatus(String id, boolean isActive) {
-        Optional<User> userOptional = userRepository.findByUsername(id);
+    public Mono<User> updateStatus(String userName, boolean isActive) {
+        Optional<User> userOptional = userRepository.findByUsername(userName);
 
         userOptional.ifPresent(user -> {
             user.setActive(isActive);
         });
 
-        return new CustomResponse<User>().ok(userRepository.save(userOptional.get()));
+        userRepository.save(userOptional.get());
+
+        return Mono.just(userOptional.get());
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<String> updatePassword(String userName, String newPassword) {
+    public Mono<String> updatePassword(String userName, String newPassword) {
         User user = userRepository.findByUsername(userName).orElseThrow();
 
         user.setPassword(newPassword);
         userRepository.save(user);
 
-        return new CustomResponse<String>().ok("Password Changed");
+        return Mono.just("Password Changed");
     }
 
     public Optional<User> getByUserName(String userName) {
