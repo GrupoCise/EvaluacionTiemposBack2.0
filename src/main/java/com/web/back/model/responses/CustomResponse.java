@@ -19,6 +19,10 @@ public class CustomResponse<T> {
         return new CustomResponse<>(null, true, 400, errorMessage);
     }
 
+    public CustomResponse<T> badRequest(T value, String errorMessage) {
+        return new CustomResponse<>(value, true, 400, errorMessage);
+    }
+
     public CustomResponse<T> forbidden() {
         return new CustomResponse<>(null, true, 403, "Forbidden");
     }
@@ -33,5 +37,9 @@ public class CustomResponse<T> {
 
     public CustomResponse<T> ok(T object) {
         return new CustomResponse<>(object, false, 200, "OK");
+    }
+
+    public CustomResponse<T> ok(T object, String message) {
+        return new CustomResponse<>(object, false, 200, message);
     }
 }
