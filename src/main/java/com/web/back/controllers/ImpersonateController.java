@@ -16,15 +16,16 @@ import java.util.List;
 @RequestMapping("/impersonate/")
 @Tag(name = "Actua Como")
 public class ImpersonateController {
-private final ImpersonateService impersonateService;
+    private final ImpersonateService impersonateService;
     private final JwtService jwtService;
+
     public ImpersonateController(ImpersonateService impersonateService, JwtService jwtService) {
         this.impersonateService = impersonateService;
         this.jwtService = jwtService;
     }
 
     @PostMapping("/insert")
-    public ResponseEntity<CustomResponse<ImpersonateResponse>> insert(@RequestHeader("Authorization") String bearerToken, @RequestBody ImpersonateRequest request){
+    public ResponseEntity<CustomResponse<ImpersonateResponse>> insert(@RequestHeader("Authorization") String bearerToken, @RequestBody ImpersonateRequest request) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<ImpersonateResponse>().forbidden());
         }
@@ -33,7 +34,7 @@ private final ImpersonateService impersonateService;
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<CustomResponse<Boolean>> delete(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id){
+    public ResponseEntity<CustomResponse<Boolean>> delete(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id) {
         if (!PermissionsFilter.canDelete(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<Boolean>().forbidden());
         }
@@ -42,7 +43,7 @@ private final ImpersonateService impersonateService;
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getAll(@RequestHeader("Authorization") String bearerToken){
+    public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getAll(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<List<ImpersonateResponse>>().forbidden());
         }
@@ -51,8 +52,8 @@ private final ImpersonateService impersonateService;
     }
 
     @GetMapping("/getByUser/")
-    public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getByUser(@RequestHeader("Authorization") String bearerToken){
-        String username=jwtService.getUsernameFromToken(bearerToken);
+    public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getByUser(@RequestHeader("Authorization") String bearerToken) {
+        String username = jwtService.getUsernameFromToken(bearerToken);
         return ResponseEntity.ok(impersonateService.getByUser(username));
     }
 }

@@ -3,7 +3,6 @@ package com.web.back.services;
 import com.web.back.mappers.ImpersonateResponseMapper;
 import com.web.back.model.entities.Impersonation;
 import com.web.back.model.entities.User;
-import com.web.back.model.entities.UserProfileId;
 import com.web.back.model.requests.ImpersonateRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.responses.ImpersonateResponse;
@@ -26,26 +25,21 @@ public class ImpersonateService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<ImpersonateResponse> saveImpersonation(ImpersonateRequest request){
+    public CustomResponse<ImpersonateResponse> saveImpersonation(ImpersonateRequest request) {
         Optional<User> actor = userRepository.findByUsername(request.userName());
         Optional<User> targetUser = userRepository.findByUsername(request.targetUserName());
 
-        if(actor.isEmpty() || targetUser.isEmpty()){
-            return new CustomResponse<ImpersonateResponse>().badRequest("No se encontró el actor o el usuario al que actua como");
-        }
+        String error = validateRequest(actor, targetUser);
+        ;
 
-        if(actor.get().getUsername().equals(targetUser.get().getUsername())){
-            return new CustomResponse<ImpersonateResponse>().badRequest( "No se puede actuar como el mismo usuario");
-        }
-
-        if(actor.get().getProfiles().stream().anyMatch(profile -> targetUser.get().getProfiles().contains(profile))){
-            return new CustomResponse<ImpersonateResponse>().badRequest( "No se puede actuar como alguien con el mismo perfil");
+        if (error != null) {
+            return new CustomResponse<ImpersonateResponse>().badRequest(error);
         }
 
         Optional<Impersonation> actuaComoOptional = impersonationRepository.findByUserAndTargetUser(actor.get(), targetUser.get());
-        if(actuaComoOptional.isPresent()){
-            return new CustomResponse<ImpersonateResponse>().badRequest( "Ya existe una relación entre los usuarios");
-        }else {
+        if (actuaComoOptional.isPresent()) {
+            return new CustomResponse<ImpersonateResponse>().badRequest("Ya existe una relación entre los usuarios");
+        } else {
             Impersonation impersonation = new Impersonation();
             impersonation.setUser(actor.get());
             impersonation.setTargetUser(targetUser.get());
@@ -57,18 +51,18 @@ public class ImpersonateService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<Boolean> deleteImpersonation(Integer id){
+    public CustomResponse<Boolean> deleteImpersonation(Integer id) {
         Optional<Impersonation> impersonation = impersonationRepository.findById(id);
 
-        if(impersonation.isEmpty()){
+        if (impersonation.isEmpty()) {
             return new CustomResponse<Boolean>().badRequest(false, "No existe una relación entre los usuarios");
-        }else {
+        } else {
             impersonationRepository.delete(impersonation.get());
-            return new CustomResponse<Boolean>().ok( true, "Actua Como eliminado correctamente");
+            return new CustomResponse<Boolean>().ok(true, "Actua Como eliminado correctamente");
         }
     }
 
-    public CustomResponse<List<ImpersonateResponse>> getImpersonations(){
+    public CustomResponse<List<ImpersonateResponse>> getImpersonations() {
         return new CustomResponse<List<ImpersonateResponse>>().ok(
                 impersonationRepository.findAll().stream().map(ImpersonateResponseMapper::mapFrom).toList()
         );
@@ -77,9 +71,25 @@ public class ImpersonateService {
     public CustomResponse<List<ImpersonateResponse>> getByUser(String username) {
         Optional<User> user = userRepository.findByUsername(username);
         return user.map(value -> new CustomResponse<List<ImpersonateResponse>>().ok(
-                    impersonationRepository.findByUser(value).stream().map(ImpersonateResponseMapper::mapFrom).toList())
+                        impersonationRepository.findByUser(value).stream().map(ImpersonateResponseMapper::mapFrom).toList())
                 )
-                .orElseGet(() -> new CustomResponse<List<ImpersonateResponse>>().badRequest( "No se encontró el usuario"));
+                .orElseGet(() -> new CustomResponse<List<ImpersonateResponse>>().badRequest("No se encontró el usuario"));
 
+    }
+
+    private String validateRequest(Optional<User> actor, Optional<User> targetUser) {
+        if (actor.isEmpty() || targetUser.isEmpty()) {
+            return "No se encontró el actor o el usuario al que actua como";
+        }
+
+        if (actor.get().getUsername().equals(targetUser.get().getUsername())) {
+            return "No se puede actuar como el mismo usuario";
+        }
+
+        if (actor.get().getProfiles().stream().anyMatch(profile -> targetUser.get().getProfiles().contains(profile))) {
+            return "No se puede actuar como alguien con el mismo perfil";
+        }
+
+        return null;
     }
 }
