@@ -1,4 +1,4 @@
-package com.web.back.services.jwt;
+package com.web.back.services;
 
 import com.web.back.model.entities.User;
 import io.jsonwebtoken.Claims;
@@ -37,6 +37,7 @@ public class JwtService {
     }
 
     public String getUsernameFromToken(String token) {
+        token = token.replace("Bearer","").trim();
         return getClaim(token, Claims::getSubject);
     }
 
@@ -48,6 +49,7 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, User userDetails) {
+        token = token.replace("Bearer","").trim();
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
@@ -72,6 +74,7 @@ public class JwtService {
     }
 
     private Date getExpiration(String token) {
+        token = token.replace("Bearer","").trim();
         return getClaim(token, Claims::getExpiration);
     }
 

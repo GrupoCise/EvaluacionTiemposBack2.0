@@ -1,4 +1,4 @@
-package com.web.back.services.auth;
+package com.web.back.services;
 
 import com.web.back.model.entities.Profile;
 import com.web.back.model.entities.User;
@@ -7,8 +7,6 @@ import com.web.back.model.requests.LoginRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.repositories.ProfilePermissionRepository;
 import com.web.back.repositories.ProfileRepository;
-import com.web.back.services.jwt.JwtService;
-import com.web.back.services.user.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -74,10 +72,15 @@ public class AuthService {
                 .map(Profile::getId)
                 .map(profileId -> {
                     var profile = profileRepository.findById(profileId);
+
+                    if(profile.isEmpty()){
+                        throw new NoSuchElementException();
+                    }
+
                     var profilePermissions = profilePermissionRepository.getByProfile(profile.get());
 
                     return profilePermissions.stream().map(item -> item.getPermission().getKeyName()).toList();
-                }).flatMap(List::stream)
+                }).flatMap(List::stream).distinct()
                 .collect(Collectors.joining("|"));
 
         String token = jwtService.getToken(user, userPermissions);

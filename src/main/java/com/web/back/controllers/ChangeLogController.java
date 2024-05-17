@@ -1,11 +1,11 @@
-package com.web.back.controllers.log;
+package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.requests.ChangeLogRequest;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.services.jwt.JwtService;
-import com.web.back.services.log.ChangeLogService;
+import com.web.back.services.JwtService;
+import com.web.back.services.ChangeLogService;
 import com.web.back.utils.DateUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;

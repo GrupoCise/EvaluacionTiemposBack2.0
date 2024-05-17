@@ -1,4 +1,4 @@
-package com.web.back.services.user;
+package com.web.back.services;
 
 import com.web.back.model.entities.Profile;
 import com.web.back.model.entities.User;

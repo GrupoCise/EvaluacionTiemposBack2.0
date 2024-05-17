@@ -1,4 +1,4 @@
-package com.web.back.services.log;
+package com.web.back.services;
 
 import com.web.back.mappers.ChangeLogXlsxMapper;
 import com.web.back.model.entities.ChangeLog;
@@ -32,7 +32,7 @@ public class ChangeLogService {
         return new CustomResponse<List<ChangeLog>>().ok(logs);
     }
 
-    public byte[] getLogsXlsData(ChangeLogRequest request) throws IOException {
+    public byte[] getLogsXlsData(ChangeLogRequest request) {
         var logs = changeLogRepository.findByFechaAndSociedadAndArea(
                 request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina());
 

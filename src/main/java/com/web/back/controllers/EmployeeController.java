@@ -1,10 +1,10 @@
-package com.web.back.controllers.empleado;
+package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.responses.EmployeeApiResponse;
-import com.web.back.services.employee.EmployeeService;
-import com.web.back.services.jwt.JwtService;
+import com.web.back.services.EmployeeService;
+import com.web.back.services.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +31,8 @@ public class EmployeeController {
             return Mono.just(new CustomResponse<List<EmployeeApiResponse>>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
-        return employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, token);
+        String username = jwtService.getUsernameFromToken(token);
+
+        return employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, username);
     }
 }

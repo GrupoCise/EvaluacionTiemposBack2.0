@@ -1,9 +1,9 @@
-package com.web.back.controllers.auth;
+package com.web.back.controllers;
 
 import com.web.back.model.responses.AuthResponse;
 import com.web.back.model.requests.LoginRequest;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.services.auth.AuthService;
+import com.web.back.services.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

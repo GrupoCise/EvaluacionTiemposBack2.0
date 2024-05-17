@@ -1,4 +1,4 @@
-package com.web.back.controllers.user;
+package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.mappers.UserDtoMapper;
@@ -6,8 +6,8 @@ import com.web.back.model.dto.UserDto;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.requests.RegisterUserRequest;
 import com.web.back.model.requests.UserUpdateRequest;
-import com.web.back.services.jwt.JwtService;
-import com.web.back.services.user.UserService;
+import com.web.back.services.JwtService;
+import com.web.back.services.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

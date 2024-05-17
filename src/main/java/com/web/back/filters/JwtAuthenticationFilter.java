@@ -3,7 +3,7 @@ package com.web.back.filters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.web.back.model.entities.User;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.services.jwt.JwtService;
+import com.web.back.services.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +20,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
@@ -32,8 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            UserDetailsService userDetailsService,
-            HandlerExceptionResolver handlerExceptionResolver
+            UserDetailsService userDetailsService
     ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;

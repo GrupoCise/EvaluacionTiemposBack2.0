@@ -1,4 +1,4 @@
-package com.web.back.services.xls;
+package com.web.back.services;
 
 import com.web.back.model.xls.XlsxField;
 
@@ -55,7 +55,7 @@ public class XlsxFileWriter implements XlsxWriter {
             List<XlsxField> xlsColumnFields = getFieldNamesForClass(data.get(0).getClass());
 
             int tempRowNo = 0;
-            int recordBeginRowNo = 0;
+            int recordBeginRowNo;
             int recordEndRowNo = 0;
 
 //    set spreadsheet titles
@@ -258,7 +258,7 @@ public class XlsxFileWriter implements XlsxWriter {
     }
 
     private static List<XlsxField> getFieldNamesForClass(Class<?> clazz) {
-        List<XlsxField> xlsColumnFields = new ArrayList();
+        List<XlsxField> xlsColumnFields = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             XlsxField xlsColumnField = new XlsxField();
@@ -288,7 +288,7 @@ public class XlsxFileWriter implements XlsxWriter {
     }
 
     private static String capitalize(String s) {
-        if (s.length() == 0)
+        if (s.isEmpty())
             return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
