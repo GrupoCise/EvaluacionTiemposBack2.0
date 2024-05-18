@@ -57,6 +57,13 @@ public class AuthService {
         return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
     }
 
+    public CustomResponse<AuthResponse> getTokenForUser(String userName){
+        User user = userService.getByUserName(userName).orElseThrow();
+
+        return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
+    }
+
+
     public Mono<CustomResponse<String>> changePassword(LoginRequest request) {
         try {
             return userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()))

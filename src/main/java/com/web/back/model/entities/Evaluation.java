@@ -4,14 +4,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.sql.Time;
+import java.util.Date;
 import java.util.Map;
 
 @Getter
@@ -24,19 +25,19 @@ public class Evaluation {
     private Integer id;
 
     @Column(name = "fecha")
-    private LocalDate fecha;
+    private Date fecha;
 
     @Column(name = "hora_entrada")
-    private LocalTime horaEntrada;
+    private Time horaEntrada;
 
     @Column(name = "hora_pausa")
-    private LocalTime horaPausa;
+    private Time horaPausa;
 
     @Column(name = "hora_regreso_pausa")
-    private LocalTime horaRegresoPausa;
+    private Time horaRegresoPausa;
 
     @Column(name = "hora_salida")
-    private LocalTime horaSalida;
+    private Time horaSalida;
 
     @Column(name = "resultado_entrada", length = 5)
     private String resultadoEntrada;
@@ -73,7 +74,7 @@ public class Evaluation {
 
     @ColumnDefault("0")
     @Column(name = "aprobado")
-    private Byte aprobado;
+    private Boolean aprobado;
 
     @ColumnDefault("0")
     @Column(name = "horas_extra")
@@ -87,4 +88,49 @@ public class Evaluation {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> payload;
 
+    @Size(max = 20)
+    @Column(name = "area_nomina", length = 20)
+    private String areaNomina;
+
+    @Size(max = 20)
+    @Column(name = "sociedad", length = 20)
+    private String sociedad;
+
+    @Size(max = 20)
+    @Column(name = "tipo_hrs_extra", length = 20)
+    private String tipoHrsExtra;
+
+    public Evaluation addPropertyPayload(String key, Object value) {
+        payload.put(key, value);
+        return this;
+    }
+
+    public Evaluation(){}
+
+    public Evaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Integer incapacidad, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
+        this.fecha = fecha;
+        this.id = id;
+        this.horaEntrada = horaEntrada;
+        this.horaPausa = horaPausa;
+        this.horaRegresoPausa = horaRegresoPausa;
+        this.horaSalida = horaSalida;
+        this.resultadoEntrada = resultadoEntrada;
+        this.resultadoPausa = resultadoPausa;
+        this.resultadoRegresoPausa = resultadoRegresoPausa;
+        this.resultadoSalida = resultadoSalida;
+        this.resultadoGeneral = resultadoGeneral;
+        this.statusRegistro = statusRegistro;
+        this.numEmpleado = numEmpleado;
+        this.horario = horario;
+        this.comentario = comentario;
+        this.enlace = enlace;
+        this.incapacidad = incapacidad;
+        this.aprobado = aprobado;
+        this.horasExtra = horasExtra;
+        this.horasTomadas = horasTomadas;
+        this.payload = payload;
+        this.areaNomina = areaNomina;
+        this.sociedad = sociedad;
+        this.tipoHrsExtra = tipoHrsExtra;
+    }
 }

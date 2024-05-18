@@ -1,12 +1,13 @@
 package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
+import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.services.EmployeeService;
 import com.web.back.services.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -26,13 +27,24 @@ public class EmployeeController {
     }
 
     @GetMapping(value = "getAll")
-    public Mono<CustomResponse<List<EmployeeApiResponse>>> getAll(String beginDate, String endDate, String sociedad, String areaNomina, String token) {
-        if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(token))) {
-            return Mono.just(new CustomResponse<List<EmployeeApiResponse>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+    public Mono<CustomResponse<List<EvaluationDto>>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+        if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
+            return Mono.just(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
-        String username = jwtService.getUsernameFromToken(token);
+        String username = jwtService.getUsernameFromToken(bearerToken);
 
         return employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, username);
+    }
+
+    @GetMapping(value = "getAll/sync")
+    public Mono<CustomResponse<List<EvaluationDto>>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+        if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken)) && !PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
+            return Mono.just(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+        }
+
+        String username = jwtService.getUsernameFromToken(bearerToken);
+
+        return employeeService.getEmployeesByFiltersFromService(beginDate, endDate, sociedad, areaNomina, username);
     }
 }

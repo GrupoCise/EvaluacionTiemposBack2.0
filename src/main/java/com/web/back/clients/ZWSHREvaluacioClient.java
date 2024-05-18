@@ -3,6 +3,7 @@ package com.web.back.clients;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
 import com.web.back.model.responses.CambioHorarioResponse;
+import com.web.back.utils.DateUtil;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -13,17 +14,17 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
-public class ZWSHREvaluacioService {
+public class ZWSHREvaluacioClient {
 
     private final WebClient webClient;
     private final String usuarioMotor;
     private final String passMotor;
     private final String sapClient;
 
-    public ZWSHREvaluacioService(@Value("${MOTOR-BASE-URI}") String motorBaseUrl,
-                                 @Value("${MOTOR-US}") String usuarioMotor,
-                                 @Value("${MOTOR-PASS}") String passMotor,
-                                 @Value("${SAP-CLIENT}") String sapClient) {
+    public ZWSHREvaluacioClient(@Value("${MOTOR-BASE-URI}") String motorBaseUrl,
+                                @Value("${MOTOR-US}") String usuarioMotor,
+                                @Value("${MOTOR-PASS}") String passMotor,
+                                @Value("${SAP-CLIENT}") String sapClient) {
         this.usuarioMotor = usuarioMotor;
         this.passMotor = passMotor;
         this.sapClient = sapClient;
@@ -35,6 +36,9 @@ public class ZWSHREvaluacioService {
     }
 
     public Mono<List<EmployeeApiResponse>> getEmployees(String username, String beginDate, String endDate, String sociedad, String areaNomina) {
+        beginDate = DateUtil.clearSymbols(beginDate);
+        endDate = DateUtil.clearSymbols(endDate);
+
         return webClient.get()
                 .uri("/Empleados?I_PERNR=" + username + "&I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate + "&SAP-CLIENT=" + sapClient + "&I_BUKRS=" + sociedad + "&I_ABKRS=" + areaNomina)
                 .header("Authorization", getBasicAuthHeaderString())
@@ -46,6 +50,9 @@ public class ZWSHREvaluacioService {
     }
 
     public Mono<EvaluacionApiResponse> getEvaluacion(String username, String beginDate, String endDate) {
+        beginDate = DateUtil.clearSymbols(beginDate);
+        endDate = DateUtil.clearSymbols(endDate);
+
         return webClient.get()
                 .uri("/Evaluacion?sap-client=" + sapClient + "&I_PERNR=" + username + "&I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate)
                 .header("Authorization", getBasicAuthHeaderString())
@@ -54,11 +61,18 @@ public class ZWSHREvaluacioService {
                 .bodyToMono(EvaluacionApiResponse.class);
     }
 
-    public Mono<List<CambioHorarioResponse>> postCambioHorario(String username, String beginDate, String endDate, String csfrToken, List<String> cookies) {
+    public Mono<List<CambioHorarioResponse>> postCambioHorario(String beginDate, String endDate) {
+        beginDate = DateUtil.clearSymbols(beginDate);
+        endDate = DateUtil.clearSymbols(endDate);
+
+        //TODO: How to do this correctly
+        List<String> cookies = List.of();//getEmployeesResponse.getHeaders().get("Set-Cookie");
+        String csrfToken = "";//getEmployeesResponse.getHeaders().getFirst("X-CSRF-Token");
+
         return webClient.post()
                 .uri("/CambioHorario?" + "I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate)
                 .header("Authorization", getBasicAuthHeaderString())
-                .header("X-CSRF-Token", csfrToken)
+                .header("X-CSRF-Token", csrfToken)
                 .header("Cookie", cookies.get(2))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()

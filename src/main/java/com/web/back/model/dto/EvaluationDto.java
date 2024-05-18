@@ -1,0 +1,39 @@
+package com.web.back.model.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.sql.Time;
+import java.util.Date;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class EvaluationDto {
+    private Integer id;
+    private Date fecha;
+    private Time horaEntrada;
+    private Time horaPausa;
+    private Time horaRegresoPausa;
+    private Time horaSalida;
+    private String resultadoEntrada;
+    private String resultadoPausa;
+    private String resultadoRegresoPausa;
+    private String resultadoSalida;
+    private String resultadoGeneral;
+    private String statusRegistro;
+    private String numEmpleado;
+    private String horario;
+    private String comentario;
+    private String enlace;
+    private Integer incapacidad;
+    private Boolean aprobado;
+    private Short horasExtra;
+    private Short horasTomadas;
+    private String areaNomina;
+    private String sociedad;
+    private String tipoHrsExtra;
+}
