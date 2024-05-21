@@ -12,7 +12,6 @@ import java.sql.Date;
 @Setter
 @Getter
 public class Incapacidad {
-    private Integer incapacidadId;
     private Date beginDate;
     private Date endDate;
     private String numEmpleado;

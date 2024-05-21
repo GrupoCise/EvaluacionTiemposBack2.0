@@ -5,7 +5,6 @@ import com.web.back.model.entities.Evaluation;
 import com.web.back.model.responses.EmployeeApiResponse;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
 
 public final class EvaluationMapper {
     private EvaluationMapper() {}
@@ -41,7 +40,7 @@ public final class EvaluationMapper {
         return evaluation;
     }
 
-    public static Evaluation mapFrom(EvaluationDto evaluation, Optional<Evaluation> original){
+    public static Evaluation mapFrom(EvaluationDto evaluation, Evaluation original){
         return new Evaluation(
                 evaluation.getFecha(),
                 evaluation.getId(),
@@ -59,11 +58,10 @@ public final class EvaluationMapper {
                 evaluation.getHorario(),
                 evaluation.getComentario(),
                 evaluation.getEnlace(),
-                evaluation.getIncapacidad(),
                 evaluation.getAprobado(),
                 evaluation.getHorasExtra(),
                 evaluation.getHorasTomadas(),
-                original.<java.util.Map<String, Object>>map(Evaluation::getPayload).orElse(null),
+                original.getPayload(),
                 evaluation.getAreaNomina(),
                 evaluation.getSociedad(),
                 evaluation.getTipoHrsExtra());

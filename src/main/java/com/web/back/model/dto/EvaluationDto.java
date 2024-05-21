@@ -29,11 +29,14 @@ public class EvaluationDto {
     private String horario;
     private String comentario;
     private String enlace;
-    private Integer incapacidad;
     private Boolean aprobado;
     private Short horasExtra;
     private Short horasTomadas;
     private String areaNomina;
     private String sociedad;
     private String tipoHrsExtra;
+    private Integer tipoIncidencia;
+    private String referencia;
+    private String consecutivo1;
+    private String consecutivo2;
 }

@@ -69,9 +69,6 @@ public class Evaluation {
     @Column(name = "enlace")
     private String enlace;
 
-    @Column(name = "incapacidad")
-    private Integer incapacidad;
-
     @ColumnDefault("0")
     @Column(name = "aprobado")
     private Boolean aprobado;
@@ -100,14 +97,28 @@ public class Evaluation {
     @Column(name = "tipo_hrs_extra", length = 20)
     private String tipoHrsExtra;
 
-    public Evaluation addPropertyPayload(String key, Object value) {
+    @Column(name = "tipo_incidencia")
+    private Integer tipoIncidencia;
+
+    @Size(max = 255)
+    @Column(name = "referencia")
+    private String referencia;
+
+    @Size(max = 255)
+    @Column(name = "consecutivo1")
+    private String consecutivo1;
+
+    @Size(max = 255)
+    @Column(name = "consecutivo2")
+    private String consecutivo2;
+
+    public void addPropertyPayload(String key, Object value) {
         payload.put(key, value);
-        return this;
     }
 
     public Evaluation(){}
 
-    public Evaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Integer incapacidad, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
+    public Evaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
         this.fecha = fecha;
         this.id = id;
         this.horaEntrada = horaEntrada;
@@ -124,7 +135,6 @@ public class Evaluation {
         this.horario = horario;
         this.comentario = comentario;
         this.enlace = enlace;
-        this.incapacidad = incapacidad;
         this.aprobado = aprobado;
         this.horasExtra = horasExtra;
         this.horasTomadas = horasTomadas;

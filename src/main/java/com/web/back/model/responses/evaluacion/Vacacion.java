@@ -12,7 +12,6 @@ import java.sql.Date;
 @Setter
 @Getter
 public class Vacacion {
-    private Long vacacionId;
     private Date beginDate;
     private Date endDate;
     private String numEmpleado;

@@ -12,7 +12,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -47,5 +46,9 @@ public class ChangeLogService {
         }
 
         return bos.toByteArray();
+    }
+
+    public void LogUpdateEvaluationsChanges(List<ChangeLog> changesSummary){
+        changeLogRepository.saveAll(changesSummary);
     }
 }
