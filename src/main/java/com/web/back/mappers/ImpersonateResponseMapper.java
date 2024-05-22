@@ -10,7 +10,9 @@ public final class ImpersonateResponseMapper {
         return new ImpersonateResponse(
                 impersonation.getId(),
                 impersonation.getUser().getUsername(),
-                impersonation.getTargetUser().getUsername()
+                impersonation.getUser().getName(),
+                impersonation.getTargetUser().getUsername(),
+                impersonation.getTargetUser().getName()
         );
     }
 }
