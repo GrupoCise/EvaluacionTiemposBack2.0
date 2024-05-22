@@ -48,8 +48,6 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "profile_id"))
     private Set<Profile> profiles = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "user")
-    private Set<WorkLock> workLocks = new LinkedHashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

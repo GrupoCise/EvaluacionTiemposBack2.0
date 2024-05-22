@@ -1,4 +1,6 @@
 package com.web.back.model.dto;
 
-public record ProfileDto(Integer id, String description) {
+import java.util.List;
+
+public record ProfileDto(Integer id, String description, List<PermissionDto> permissions) {
 }

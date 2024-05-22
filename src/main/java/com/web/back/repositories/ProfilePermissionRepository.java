@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface ProfilePermissionRepository extends JpaRepository<ProfilePermission, ProfilePermissionId> {
-    long deleteByProfile(Profile profile);
+    void deleteByProfile(Profile profile);
 
     List<ProfilePermission> getByProfile(Profile profile);
 }

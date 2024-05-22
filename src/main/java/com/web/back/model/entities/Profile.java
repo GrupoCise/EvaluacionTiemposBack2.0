@@ -1,11 +1,11 @@
 package com.web.back.model.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,5 +18,11 @@ public class Profile {
 
     @Column(name = "description", nullable = false, length = 100)
     private String description;
+
+    @ManyToMany
+    @JoinTable(name = "profile_permission",
+            joinColumns = @JoinColumn(name = "profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private Set<Permission> permissions = new LinkedHashSet<>();
 
 }

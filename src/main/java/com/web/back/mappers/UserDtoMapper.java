@@ -1,6 +1,5 @@
 package com.web.back.mappers;
 
-import com.web.back.model.dto.ProfileDto;
 import com.web.back.model.dto.UserDto;
 import com.web.back.model.entities.User;
 
@@ -16,7 +15,7 @@ public final class UserDtoMapper {
                 user.getEmail(),
                 user.getActive(),
                 user.getProfiles().stream()
-                        .map(profile -> new ProfileDto(profile.getId(), profile.getDescription()))
+                        .map(ProfileDtoMapper::mapFrom)
                         .toList()
         );
     }
@@ -31,7 +30,7 @@ public final class UserDtoMapper {
                 user.getEmail(),
                 user.getActive(),
                 user.getProfiles().stream()
-                        .map(profile -> new ProfileDto(profile.getId(), profile.getDescription()))
+                        .map(ProfileDtoMapper::mapFrom)
                         .toList()
         );
     }
