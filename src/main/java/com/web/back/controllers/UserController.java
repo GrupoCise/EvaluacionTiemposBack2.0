@@ -37,13 +37,13 @@ public class UserController {
                 .doOnError(ex -> new CustomResponse<UserDto>().badRequest(ex.getMessage()));
     }
 
-    @PutMapping("update/{userName}")
-    public Mono<CustomResponse<UserDto>> update(@RequestHeader("Authorization") String bearerToken, @PathVariable String userName, @RequestBody UserUpdateRequest request) {
+    @PutMapping("update/{id}")
+    public Mono<CustomResponse<UserDto>> update(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id, @RequestBody UserUpdateRequest request) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
             return Mono.just(new CustomResponse<UserDto>().forbidden());
         }
 
-        return userService.update(userName, request)
+        return userService.update(id, request)
                 .map(user -> new CustomResponse<UserDto>().ok(UserDtoMapper.mapFrom(user)))
                 .doOnError(ex -> new CustomResponse<UserDto>().badRequest(ex.getMessage()));
     }
@@ -69,11 +69,11 @@ public class UserController {
     }
 
     @GetMapping(value = "getAll")
-    public Mono<CustomResponse<List<UserDto>>> getAll(@RequestHeader("Authorization") String bearerToken, Boolean isActive) {
+    public Mono<CustomResponse<List<UserDto>>> getAll(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
             return Mono.just(new CustomResponse<List<UserDto>>().forbidden());
         }
-        return userService.getUsersByStatus(isActive)
+        return userService.getAll()
                 .map(users -> users.stream().map(UserDtoMapper::mapFrom).toList())
                 .map(usersDto -> new CustomResponse<List<UserDto>>().ok(usersDto));
     }
@@ -86,5 +86,15 @@ public class UserController {
 
         return Mono.just(new CustomResponse<UserDto>().ok(
                 UserDtoMapper.mapFrom(userService.getByUserName(userName))));
+    }
+
+    @DeleteMapping("delete/{id}")
+    public Mono<CustomResponse<String>> enable(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id) {
+        if (!PermissionsFilter.canDelete(jwtService.getPermissionsFromToken(bearerToken))) {
+            return Mono.just(new CustomResponse<String>().forbidden());
+        }
+
+        return userService.deleteUser(id)
+                .map(user -> new CustomResponse<String>().ok("Eliminado!"));
     }
 }

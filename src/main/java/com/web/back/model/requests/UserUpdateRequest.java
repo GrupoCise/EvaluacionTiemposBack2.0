@@ -17,6 +17,7 @@ public class UserUpdateRequest {
     String username;
     String name;
     String email;
+    Boolean isActive;
     List<Integer> profiles;
 
     @JsonIgnore
@@ -28,6 +29,7 @@ public class UserUpdateRequest {
         user.setName(this.name);
         user.setEmail(this.email);
         user.setUsername(this.username);
+        user.setActive(this.isActive);
         return user;
     }
 }

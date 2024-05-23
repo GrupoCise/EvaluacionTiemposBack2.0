@@ -75,12 +75,12 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<User> update(String userName, UserUpdateRequest userUpdate) {
+    public Mono<User> update(Integer id, UserUpdateRequest userUpdate) {
         if (!userUpdate.isLongEnough()) {
             return Mono.error(new Throwable("ERROR: The fields should be filled with 8 characters long"));
         }
 
-        User user = userRepository.findByUsername(userName).get();
+        User user = userRepository.findById(id).get();
         user = userUpdate.changeUser(user);
 
         userRepository.save(user);
@@ -91,9 +91,12 @@ public class UserService {
         return Mono.just(user);
     }
 
-    @Transactional(rollbackFor = {Exception.class})
     public Mono<List<User>> getUsersByStatus(boolean status) {
         return Mono.just(userRepository.findAllByActive(status).get());
+    }
+
+    public Mono<List<User>> getAll() {
+        return Mono.just(userRepository.findAll());
     }
 
     @Transactional(rollbackFor = {Exception.class})
@@ -115,6 +118,15 @@ public class UserService {
 
         user.setPassword(newPassword);
         userRepository.save(user);
+
+        return Mono.just("Password Changed");
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
+    public Mono<String> deleteUser(Integer id) {
+        var user = userRepository.findById(id).orElseThrow();
+
+        userRepository.delete(user);
 
         return Mono.just("Password Changed");
     }

@@ -10,7 +10,9 @@ public final class UserDtoMapper {
     private UserDtoMapper(){}
 
     public static UserDto mapFrom(User user) {
-        return new UserDto(user.getUsername(),
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
                 user.getName(),
                 user.getEmail(),
                 user.getActive(),
@@ -25,7 +27,9 @@ public final class UserDtoMapper {
 
         User user = userOptional.get();
 
-        return new UserDto(user.getUsername(),
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
                 user.getName(),
                 user.getEmail(),
                 user.getActive(),

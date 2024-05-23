@@ -54,13 +54,13 @@ public class ProfileController {
     }
 
     @PutMapping(value = "update/{id}")
-    public ResponseEntity<CustomResponse<ProfileDto>> update(@RequestHeader("Authorization") String bearerToken, @RequestBody ProfileRequest request, @PathVariable Long id) {
+    public ResponseEntity<CustomResponse<ProfileDto>> update(@RequestHeader("Authorization") String bearerToken, @RequestBody ProfileRequest request, @PathVariable Integer id) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<ProfileDto>().forbidden());
         }
 
         return ResponseEntity.ok(new CustomResponse<ProfileDto>().ok(
-                ProfileDtoMapper.mapFrom(profileService.update(request))
+                ProfileDtoMapper.mapFrom(profileService.update(id, request))
         ));
     }
 

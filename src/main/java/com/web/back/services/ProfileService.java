@@ -44,12 +44,12 @@ public class ProfileService {
 
         saveProfilePermissions(profile, request.permissionKeys());
 
-        return profile;
+        return profileRepository.findById(profile.getId()).orElseThrow();
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Profile update(ProfileRequest request) {
-        Optional<Profile> profileOptional = profileRepository.findById(request.profileId());
+    public Profile update(Integer id, ProfileRequest request) {
+        Optional<Profile> profileOptional = profileRepository.findById(id);
 
         if (profileOptional.isEmpty()) {
             throw new RuntimeException("Perfil no encontrado");
@@ -68,7 +68,7 @@ public class ProfileService {
 
         saveProfilePermissions(profileOptional.get(), request.permissionKeys());
 
-        return profileOptional.get();
+        return profileRepository.findById(id).orElseThrow();
     }
 
     @Transactional(rollbackFor = {Exception.class})
@@ -91,10 +91,6 @@ public class ProfileService {
                 .map(profilePermissionRepository::getByProfile)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-    }
-
-    public List<Profile> findAll() {
-        return profileRepository.findAll();
     }
 
     private void saveProfilePermissions(Profile profile, List<String> permissions) {
