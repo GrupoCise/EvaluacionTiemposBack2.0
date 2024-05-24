@@ -26,6 +26,7 @@ public class EvaluationDto {
     private String resultadoGeneral;
     private String statusRegistro;
     private String numEmpleado;
+    private String empleadoName;
     private String horario;
     private String comentario;
     private String enlace;

@@ -1,6 +1,7 @@
 package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
+import com.web.back.model.dto.ChangeLogDto;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.requests.ChangeLogRequest;
 import com.web.back.model.responses.CustomResponse;
@@ -18,7 +19,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @RestController
-@RequestMapping("/log/")
+@RequestMapping("/log")
 @Tag(name = "Change Log")
 public class ChangeLogController {
     private final JwtService jwtService;
@@ -29,13 +30,13 @@ public class ChangeLogController {
         this.changeLogService = changeLogService;
     }
 
-    @GetMapping(value = "getAll/{beginDate}/{endDate}/{sociedad}/{areaNomina}")
-    public Mono<CustomResponse<List<ChangeLog>>> getAll(@RequestHeader("Authorization") String bearerToken, @PathVariable String beginDate, @PathVariable String endDate, @PathVariable String sociedad, @PathVariable String areaNomina) {
+    @PostMapping(value = "/getAll")
+    public Mono<CustomResponse<List<ChangeLogDto>>> getAll(@RequestHeader("Authorization") String bearerToken, @RequestBody ChangeLogRequest request) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return Mono.just(new CustomResponse<List<ChangeLog>>().forbidden());
+            return Mono.just(new CustomResponse<List<ChangeLogDto>>().forbidden());
         }
 
-        return Mono.just(changeLogService.getLogs(beginDate, endDate, sociedad, areaNomina));
+        return Mono.just(changeLogService.getLogs(request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina()));
     }
 
     @PostMapping(value = "/logToExcel")

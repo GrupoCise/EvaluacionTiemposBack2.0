@@ -32,7 +32,7 @@ public class ChangeLogXlsx {
     private String updated;
 
     @XlsxSingleField(columnIndex = 5)
-    private Integer userId;
+    private String editorUserName;
 
     public static String[] getColumnTitles(){
         return new String[]{

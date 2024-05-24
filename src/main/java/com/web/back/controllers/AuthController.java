@@ -30,7 +30,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @GetMapping(value = "/impersonate/token")
+    @GetMapping(value = "/impersonate")
     public ResponseEntity<CustomResponse<AuthResponse>> getAuthForImpersonation(@RequestHeader("Authorization") String bearerToken, String targetUserName) {
         var userName = jwtService.getUsernameFromToken(bearerToken);
         var impersonations = impersonateService.getByUser(userName);

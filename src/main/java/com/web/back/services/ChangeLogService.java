@@ -1,6 +1,8 @@
 package com.web.back.services;
 
+import com.web.back.mappers.ChangeLogDtoMapper;
 import com.web.back.mappers.ChangeLogXlsxMapper;
+import com.web.back.model.dto.ChangeLogDto;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.requests.ChangeLogRequest;
 import com.web.back.model.responses.CustomResponse;
@@ -24,11 +26,13 @@ public class ChangeLogService {
         this.xlsxWriter = xlsxWriter;
     }
 
-    public CustomResponse<List<ChangeLog>> getLogs(String beginDate, String endDate, String sociedad, String areaNomina) {
+    public CustomResponse<List<ChangeLogDto>> getLogs(String beginDate, String endDate, String sociedad, String areaNomina) {
 
         var logs = changeLogRepository.findByFechaAndSociedadAndArea(beginDate, endDate, sociedad, areaNomina);
 
-        return new CustomResponse<List<ChangeLog>>().ok(logs);
+        var enrichedLogs = logs.stream().map(ChangeLogDtoMapper::mapFrom).toList();
+
+        return new CustomResponse<List<ChangeLogDto>>().ok(enrichedLogs);
     }
 
     public byte[] getLogsXlsData(ChangeLogRequest request) {

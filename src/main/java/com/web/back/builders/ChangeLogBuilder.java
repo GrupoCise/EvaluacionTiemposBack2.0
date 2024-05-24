@@ -18,14 +18,14 @@ public final class ChangeLogBuilder {
         var updateDate = Instant.now();
 
         return Stream.of(
-                        build("Horas Tomadas", original.getHorasTomadas(), updated.getHorasTomadas(), original, user.getId(), updateDate),
-                        build("Horas Extras", original.getHorasExtra(), updated.getHorasExtra(), original, user.getId(), updateDate),
-                        build("Horario", original.getHorario(), updated.getHorario(), original, user.getId(), updateDate),
-                        build("Hora Entrada", original.getHoraEntrada(), updated.getHoraEntrada(), original, user.getId(), updateDate),
-                        build("Hora Salida", original.getHoraSalida(), updated.getHoraSalida(), original, user.getId(), updateDate),
-                        build("Resultado General", original.getResultadoGeneral(), updated.getResultadoGeneral(), original, user.getId(), updateDate),
-                        build("Comentario", original.getComentario(), updated.getComentario(), original, user.getId(), updateDate),
-                        build("Enlace", original.getEnlace(), updated.getEnlace(), original, user.getId(), updateDate)
+                        build("Horas Tomadas", original.getHorasTomadas(), updated.getHorasTomadas(), updated, original, user, updateDate),
+                        build("Horas Extras", original.getHorasExtra(), updated.getHorasExtra(), updated, original, user, updateDate),
+                        build("Horario", original.getHorario(), updated.getHorario(), updated, original, user, updateDate),
+                        build("Hora Entrada", original.getHoraEntrada(), updated.getHoraEntrada(), updated, original, user, updateDate),
+                        build("Hora Salida", original.getHoraSalida(), updated.getHoraSalida(), updated, original, user, updateDate),
+                        build("Resultado General", original.getResultadoGeneral(), updated.getResultadoGeneral(), updated, original, user, updateDate),
+                        build("Comentario", original.getComentario(), updated.getComentario(), updated, original, user, updateDate),
+                        build("Enlace", original.getEnlace(), updated.getEnlace(), updated, original, user, updateDate)
                 ).filter(changeLog -> !changeLog.getOriginal().equals(changeLog.getUpdated()))
                 .collect(Collectors.toList());
     }
@@ -33,8 +33,9 @@ public final class ChangeLogBuilder {
     private static ChangeLog build(String field,
                                    Object originalValue,
                                    Object updatedValue,
+                                   EvaluationDto updated,
                                    Evaluation baseEvaluation,
-                                   Integer userId,
+                                   User user,
                                    Instant updateDate) {
         ChangeLog changeLog = new ChangeLog();
 
@@ -42,8 +43,10 @@ public final class ChangeLogBuilder {
         changeLog.setOriginal(originalValue.toString());
         changeLog.setUpdated(updatedValue.toString());
         changeLog.setNumEmpleado(baseEvaluation.getNumEmpleado());
+        changeLog.setEmpleadoName(updated.getEmpleadoName());
         changeLog.setEvaluationId(baseEvaluation.getId());
-        changeLog.setUserId(userId);
+        changeLog.setEditorUserName(user.getUsername());
+        changeLog.setEditorName(user.getName());
         changeLog.setSociedad(baseEvaluation.getSociedad());
         changeLog.setAreaNomina(baseEvaluation.getAreaNomina());
         changeLog.setUpdatedOn(updateDate);

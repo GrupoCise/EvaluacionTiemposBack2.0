@@ -13,6 +13,6 @@ public final class ChangeLogXlsxMapper {
                 log.getField(),
                 log.getOriginal(),
                 log.getUpdated(),
-                log.getUserId());
+                log.getEditorUserName());
     }
 }

@@ -32,9 +32,6 @@ public class ChangeLog {
     @Column(name = "evaluation_id")
     private Integer evaluationId;
 
-    @Column(name = "user_id")
-    private Integer userId;
-
     @Column(name = "updated_on")
     private Instant updatedOn;
 
@@ -45,5 +42,17 @@ public class ChangeLog {
     @Size(max = 250)
     @Column(name = "area_nomina", length = 250)
     private String areaNomina;
+
+    @Size(max = 50)
+    @Column(name = "editor_user_name", length = 50)
+    private String editorUserName;
+
+    @Size(max = 250)
+    @Column(name = "editor_name", length = 250)
+    private String editorName;
+
+    @Size(max = 250)
+    @Column(name = "empleado_name", length = 250)
+    private String empleadoName;
 
 }

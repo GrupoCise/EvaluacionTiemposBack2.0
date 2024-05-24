@@ -20,6 +20,7 @@ public final class EvaluationDtoMapper {
                 evaluation.getResultadoGeneral(),
                 evaluation.getStatusRegistro(),
                 evaluation.getNumEmpleado(),
+                "",
                 evaluation.getHorario(),
                 evaluation.getComentario(),
                 evaluation.getEnlace(),

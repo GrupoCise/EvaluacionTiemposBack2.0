@@ -51,7 +51,7 @@ public class ImpersonateController {
         return ResponseEntity.ok(impersonateService.getImpersonations());
     }
 
-    @GetMapping("/getByUser/")
+    @GetMapping("/getByUser")
     public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getByUser(@RequestHeader("Authorization") String bearerToken) {
         String username = jwtService.getUsernameFromToken(bearerToken);
         return ResponseEntity.ok(impersonateService.getByUser(username));
