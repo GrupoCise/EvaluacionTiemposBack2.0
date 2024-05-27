@@ -1,12 +1,10 @@
 package com.web.back.services;
 
-import com.web.back.model.entities.Profile;
+import com.web.back.model.entities.Permission;
 import com.web.back.model.entities.User;
 import com.web.back.model.responses.AuthResponse;
 import com.web.back.model.requests.LoginRequest;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.repositories.ProfilePermissionRepository;
-import com.web.back.repositories.ProfileRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -14,9 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -25,20 +23,15 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final ProfilePermissionRepository profilePermissionRepository;
-    private final ProfileRepository profileRepository;
 
     public AuthService(UserService userService,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager,
-                       ProfilePermissionRepository profilePermissionRepository, ProfileRepository profileRepository) {
+                       AuthenticationManager authenticationManager) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
-        this.profilePermissionRepository = profilePermissionRepository;
-        this.profileRepository = profileRepository;
     }
 
     public CustomResponse<AuthResponse> login(LoginRequest request) {
@@ -74,25 +67,24 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(User user) {
+        var userPermissions = new ArrayList<String>();
+        var userPermissionsTemp = user.getProfiles().stream()
+                .map(profile -> {
+                    var profilePermissions = profile.getPermissions();
 
-        var userPermissions = user.getProfiles().stream()
-                .map(Profile::getId)
-                .map(profileId -> {
-                    var profile = profileRepository.findById(profileId);
+                    return profilePermissions.stream().map(Permission::getKeyName).toList();
+                }).toList();
 
-                    if(profile.isEmpty()){
-                        throw new NoSuchElementException();
-                    }
 
-                    var profilePermissions = profilePermissionRepository.getByProfile(profile.get());
+        for (List<String> list : userPermissionsTemp) {
+            userPermissions.addAll(list);
+        }
 
-                    return profilePermissions.stream().map(item -> item.getPermission().getKeyName()).toList();
-                }).flatMap(List::stream).distinct()
-                .collect(Collectors.joining("|"));
+        String token = jwtService.getToken(user, String.join("|", userPermissions));
 
-        String token = jwtService.getToken(user, userPermissions);
         return AuthResponse.builder()
                 .token(token)
+                .permissions(userPermissions)
                 .build();
     }
 }
