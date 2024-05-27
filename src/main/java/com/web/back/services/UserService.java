@@ -14,8 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -57,21 +56,14 @@ public class UserService {
 
     @Transactional(rollbackFor = {Exception.class})
     protected void saveUserProfiles(User user, List<Integer> profileIds) {
+        Set<Profile> profiles = new HashSet<>();
         profileIds.forEach(profileId -> {
-            UserProfile userProfile = new UserProfile();
-
             Profile profile = profileRepository.findById(profileId).get();
 
-            UserProfileId userProfileId = new UserProfileId();
-            userProfileId.setProfileId(profileId);
-            userProfileId.setUserId(user.getId());
-            userProfile.setId(userProfileId);
-
-            userProfile.setProfile(profile);
-            userProfile.setUser(user);
-
-            userProfileRepository.save(userProfile);
+            profiles.add(profile);
         });
+
+        user.setProfiles(profiles);
     }
 
     @Transactional(rollbackFor = {Exception.class})
@@ -83,16 +75,9 @@ public class UserService {
         User user = userRepository.findById(id).get();
         user = userUpdate.changeUser(user);
 
-        userRepository.save(user);
-
-        userProfileRepository.deleteByUser(user);
         saveUserProfiles(user, userUpdate.getProfiles());
 
         return Mono.just(user);
-    }
-
-    public Mono<List<User>> getUsersByStatus(boolean status) {
-        return Mono.just(userRepository.findAllByActive(status).get());
     }
 
     public Mono<List<User>> getAll() {

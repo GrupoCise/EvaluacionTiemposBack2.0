@@ -3,7 +3,6 @@ package com.web.back.controllers;
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.mappers.ProfileDtoMapper;
 import com.web.back.model.dto.ProfileDto;
-import com.web.back.model.entities.ProfilePermission;
 import com.web.back.model.requests.ProfileRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.services.JwtService;
@@ -11,9 +10,7 @@ import com.web.back.services.ProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequestMapping("/perfil/")
 @RestController
@@ -32,14 +29,8 @@ public class ProfileController {
             return ResponseEntity.ok(new CustomResponse<List<ProfileDto>>().forbidden());
         }
 
-        var profiles = new ArrayList<ProfileDto>();
-
-        profileService.getALlWithPermissions().stream()
-                .collect(Collectors.groupingBy(ProfilePermission::getProfile))
-                .forEach((profile, profilePermissions) ->
-                        profiles.add(ProfileDtoMapper.mapFrom(profile, profilePermissions)));
-
-        return ResponseEntity.ok(new CustomResponse<List<ProfileDto>>().ok(profiles));
+        return ResponseEntity.ok(new CustomResponse<List<ProfileDto>>().ok(profileService.getALl().stream()
+                .map(ProfileDtoMapper::mapFrom).toList()));
     }
 
     @PostMapping(value = "register")

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProfileService {
@@ -86,11 +85,8 @@ public class ProfileService {
         profileRepository.deleteById(id);
     }
 
-    public List<ProfilePermission> getALlWithPermissions() {
-        return profileRepository.findAll().stream()
-                .map(profilePermissionRepository::getByProfile)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+    public List<Profile> getALl() {
+        return profileRepository.findAll();
     }
 
     private void saveProfilePermissions(Profile profile, List<String> permissions) {

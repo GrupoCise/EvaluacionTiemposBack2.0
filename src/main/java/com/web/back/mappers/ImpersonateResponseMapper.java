@@ -11,8 +11,8 @@ public final class ImpersonateResponseMapper {
                 impersonation.getId(),
                 impersonation.getUser().getUsername(),
                 impersonation.getUser().getName(),
-                impersonation.getTargetUser().getUsername(),
-                impersonation.getTargetUser().getName()
+                impersonation.getTargetUser().getName(),
+                impersonation.getTargetUser().getUsername()
         );
     }
 }
