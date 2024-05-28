@@ -1,11 +1,13 @@
 package com.web.back.clients;
 
+import com.web.back.model.requests.CambioHorarioRequest;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
 import com.web.back.model.responses.CambioHorarioResponse;
 import com.web.back.utils.DateUtil;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -61,23 +63,33 @@ public class ZWSHREvaluacioClient {
                 .bodyToMono(EvaluacionApiResponse.class);
     }
 
-    public Mono<List<CambioHorarioResponse>> postCambioHorario(String beginDate, String endDate) {
+    public Mono<List<CambioHorarioResponse>> postCambioHorario(String beginDate, String endDate, List<CambioHorarioRequest> cambioHorarioRequests) {
         beginDate = DateUtil.clearSymbols(beginDate);
         endDate = DateUtil.clearSymbols(endDate);
 
         //TODO: How to do this correctly
-        List<String> cookies = List.of();//getEmployeesResponse.getHeaders().get("Set-Cookie");
-        String csrfToken = "";//getEmployeesResponse.getHeaders().getFirst("X-CSRF-Token");
+
+        var response = webClient.get()
+                .uri("/Empleados?I_PERNR=" + "" + "&I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate + "&SAP-CLIENT=" + sapClient + "&I_BUKRS=" + "" + "&I_ABKRS=" + "")
+                .header("Authorization", getBasicAuthHeaderString())
+                .header("X-CSRF-Token", "fetch")
+                .retrieve()
+                .toBodilessEntity().map(HttpEntity::getHeaders).block();
+
+        List<String> cookies = response.get("Set-Cookie");
+        String csrfToken = response.getFirst("X-CSRF-Token");
 
         return webClient.post()
                 .uri("/CambioHorario?" + "I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate)
                 .header("Authorization", getBasicAuthHeaderString())
                 .header("X-CSRF-Token", csrfToken)
                 .header("Cookie", cookies.get(2))
+                .bodyValue(cambioHorarioRequests)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToFlux(CambioHorarioResponse.class)
-                .collectList();
+                .toBodilessEntity().map(result -> { result.getHeaders(); return List.of();});
+//                .bodyToMono(new ParameterizedTypeReference<>() {
+//                });
     }
 
     private String getBasicAuthHeaderString() {

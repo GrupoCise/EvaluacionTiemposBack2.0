@@ -4,6 +4,7 @@ import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.entities.Evaluation;
 import com.web.back.model.entities.User;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,7 +27,9 @@ public final class ChangeLogBuilder {
                         build("Resultado General", original.getResultadoGeneral(), updated.getResultadoGeneral(), updated, original, user, updateDate),
                         build("Comentario", original.getComentario(), updated.getComentario(), updated, original, user, updateDate),
                         build("Enlace", original.getEnlace(), updated.getEnlace(), updated, original, user, updateDate)
-                ).filter(changeLog -> !changeLog.getOriginal().equals(changeLog.getUpdated()))
+                ).filter(changeLog -> ObjectUtils.isNotEmpty(changeLog.getOriginal()) &&
+                        ObjectUtils.isNotEmpty(changeLog.getUpdated()) &&
+                        !changeLog.getOriginal().equals(changeLog.getUpdated()))
                 .collect(Collectors.toList());
     }
 
@@ -40,8 +43,8 @@ public final class ChangeLogBuilder {
         ChangeLog changeLog = new ChangeLog();
 
         changeLog.setField(field);
-        changeLog.setOriginal(originalValue.toString());
-        changeLog.setUpdated(updatedValue.toString());
+        changeLog.setOriginal(ObjectUtils.isNotEmpty(originalValue) ? originalValue.toString() : null);
+        changeLog.setUpdated(ObjectUtils.isNotEmpty(updatedValue) ? updatedValue.toString() : null);
         changeLog.setNumEmpleado(baseEvaluation.getNumEmpleado());
         changeLog.setEmpleadoName(updated.getEmpleadoName());
         changeLog.setEvaluationId(baseEvaluation.getId());

@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ChangeLogRepository extends JpaRepository<ChangeLog, Integer> {
     @Query(
-            value = "SELECT * FROM change_log a where a.updated_on between :beginDate and :endDate AND a.sociedad = :sociedad AND a.area_nomina = :area order by a.updated_on;",nativeQuery = true
+            value = "SELECT a.* FROM change_log a INNER JOIN evaluation e ON a.evaluation_id = e.id where e.fecha between :beginDate and :endDate AND a.sociedad = :sociedad AND a.area_nomina = :area order by a.updated_on;",nativeQuery = true
     )
     List<ChangeLog> findByFechaAndSociedadAndArea(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("sociedad") String sociedad, @Param("area") String area);
 

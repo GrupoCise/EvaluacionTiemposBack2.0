@@ -111,34 +111,6 @@ public class Evaluation {
     private String consecutivo2;
 
     public void addPropertyPayload(String key, Object value) {
-        payload.put(key, value);
-    }
-
-    public Evaluation(){}
-
-    public Evaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
-        this.fecha = fecha;
-        this.id = id;
-        this.horaEntrada = horaEntrada;
-        this.horaPausa = horaPausa;
-        this.horaRegresoPausa = horaRegresoPausa;
-        this.horaSalida = horaSalida;
-        this.resultadoEntrada = resultadoEntrada;
-        this.resultadoPausa = resultadoPausa;
-        this.resultadoRegresoPausa = resultadoRegresoPausa;
-        this.resultadoSalida = resultadoSalida;
-        this.resultadoGeneral = resultadoGeneral;
-        this.statusRegistro = statusRegistro;
-        this.numEmpleado = numEmpleado;
-        this.horario = horario;
-        this.comentario = comentario;
-        this.enlace = enlace;
-        this.aprobado = aprobado;
-        this.horasExtra = horasExtra;
-        this.horasTomadas = horasTomadas;
-        this.payload = payload;
-        this.areaNomina = areaNomina;
-        this.sociedad = sociedad;
-        this.tipoHrsExtra = tipoHrsExtra;
+        this.payload.put(key, value);
     }
 }

@@ -13,7 +13,7 @@ import java.sql.Time;
 @Setter
 @Getter
 public class EmployeeApiResponse {
-    private String employeeNumber;
+    private String empleado;
     private Date fecha;
     private Time horaEntrada;
     private Time horaSPausa;
@@ -26,5 +26,5 @@ public class EmployeeApiResponse {
     private String estatusGen;
     private String horario;
     private Short hrsextradia;
-    private String tipoHrsext;
+    private String tipoHrsext; //E - no pasa nada
 }

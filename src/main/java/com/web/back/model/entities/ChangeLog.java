@@ -55,4 +55,5 @@ public class ChangeLog {
     @Column(name = "empleado_name", length = 250)
     private String empleadoName;
 
+
 }

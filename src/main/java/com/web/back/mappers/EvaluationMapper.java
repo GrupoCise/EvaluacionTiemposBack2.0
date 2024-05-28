@@ -5,6 +5,9 @@ import com.web.back.model.entities.Evaluation;
 import com.web.back.model.responses.EmployeeApiResponse;
 
 import java.lang.reflect.Field;
+import java.sql.Time;
+import java.util.Date;
+import java.util.Map;
 
 public final class EvaluationMapper {
     private EvaluationMapper() {}
@@ -21,9 +24,9 @@ public final class EvaluationMapper {
         evaluation.setResultadoPausa(employee.getRHoraSPausa());
         evaluation.setResultadoRegresoPausa(employee.getRHoraEPausa());
         evaluation.setResultadoSalida(employee.getRHoraSalida());
-        evaluation.setResultadoGeneral("0");
+        evaluation.setResultadoGeneral(employee.getEstatusGen());
         evaluation.setStatusRegistro(employee.getEstatusGen());
-        evaluation.setNumEmpleado(employee.getEmployeeNumber());
+        evaluation.setNumEmpleado(employee.getEmpleado());
         evaluation.setHorario(employee.getHorario());
         evaluation.setHorasExtra(employee.getHrsextradia());
         evaluation.setTipoHrsExtra(employee.getTipoHrsext());
@@ -41,7 +44,7 @@ public final class EvaluationMapper {
     }
 
     public static Evaluation mapFrom(EvaluationDto evaluation, Evaluation original){
-        return new Evaluation(
+        return toEvaluation(
                 evaluation.getFecha(),
                 evaluation.getId(),
                 evaluation.getHoraEntrada(),
@@ -65,5 +68,35 @@ public final class EvaluationMapper {
                 evaluation.getAreaNomina(),
                 evaluation.getSociedad(),
                 evaluation.getTipoHrsExtra());
+    }
+
+    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
+        var evaluation = new Evaluation();
+
+        evaluation.setFecha(fecha);
+        evaluation.setId(id);
+        evaluation.setHoraEntrada(horaEntrada);
+        evaluation.setHoraPausa(horaPausa);
+        evaluation.setHoraRegresoPausa(horaRegresoPausa);
+        evaluation.setHoraSalida(horaSalida);
+        evaluation.setResultadoEntrada(resultadoEntrada);
+        evaluation.setResultadoPausa(resultadoPausa);
+        evaluation.setResultadoRegresoPausa(resultadoRegresoPausa);
+        evaluation.setResultadoSalida(resultadoSalida);
+        evaluation.setResultadoGeneral(resultadoGeneral);
+        evaluation.setStatusRegistro(statusRegistro);
+        evaluation.setNumEmpleado(numEmpleado);
+        evaluation.setHorario(horario);
+        evaluation.setComentario(comentario);
+        evaluation.setEnlace(enlace);
+        evaluation.setAprobado(aprobado);
+        evaluation.setHorasExtra(horasExtra);
+        evaluation.setHorasTomadas(horasTomadas);
+        evaluation.setPayload(payload);
+        evaluation.setAreaNomina(areaNomina);
+        evaluation.setSociedad(sociedad);
+        evaluation.setTipoHrsExtra(tipoHrsExtra);
+
+        return evaluation;
     }
 }

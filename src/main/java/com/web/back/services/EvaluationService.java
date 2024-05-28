@@ -54,13 +54,13 @@ public class EvaluationService {
             return new CustomResponse<List<EvaluationDto>>().badRequest("No hay empleados que cumplan con los filstros actuales");
         }
 
-        var cambioHorariosResponse = applyCambiosDeHorario(employees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
+//        var cambioHorariosResponse = applyCambiosDeHorario(employees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
+//
+//        if (cambioHorariosResponse.isError()) {
+//            return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
+//        }
 
-        if (cambioHorariosResponse.isError()) {
-            return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
-        }
-
-        mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
+        //mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
         mapVacations(updatedEvaluations, request.getVacaciones());
         mapIncapacidades(updatedEvaluations, request.getIncapacidades());
 
@@ -84,7 +84,7 @@ public class EvaluationService {
     private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<EmployeeApiResponse> employees, List<EvaluationDto> updatedEmployees, String beginDate, String endDate) {
         var updatesToApply = employees.stream()
                 .flatMap(current -> updatedEmployees.stream()
-                        .filter(updated -> current.getEmployeeNumber().equals(updated.getNumEmpleado()))
+                        .filter(updated -> current.getEmpleado().equals(updated.getNumEmpleado()))
                         .filter(updated -> !current.getHorario().equals(updated.getHorario()))
                         .filter(updated -> DateUtil.toStringYYYYMMDD(current.getFecha())
                                 .equals(DateUtil.toStringYYYYMMDD(updated.getFecha())))
@@ -97,7 +97,7 @@ public class EvaluationService {
             return new CustomResponse<List<CambioHorarioResponse>>().ok(null);
         }
 
-        return zwshrEvaluacioClient.postCambioHorario(beginDate, endDate)
+        return zwshrEvaluacioClient.postCambioHorario(beginDate, endDate, updatesToApply)
                 .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(result)).block();
     }
 
@@ -142,6 +142,8 @@ public class EvaluationService {
     }
 
     public void mapIncapacidades(List<EvaluationDto> updatedEvaluations, List<Incapacidad> incapacidades) {
+        if (incapacidades == null || incapacidades.isEmpty()) return;
+
         for (Incapacidad incapacidad : incapacidades) {
 
             List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(DateUtil.toStringYYYYMMDD(incapacidad.getBeginDate()), DateUtil.toStringYYYYMMDD(incapacidad.getEndDate()), incapacidad.getNumEmpleado());

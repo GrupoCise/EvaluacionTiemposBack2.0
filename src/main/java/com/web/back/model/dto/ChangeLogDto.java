@@ -7,6 +7,7 @@ public record ChangeLogDto(
         String numEmpleado,
         String empleadoName,
         Instant updatedOn,
+        String fecha,
         String field,
         String original,
         String updated,
