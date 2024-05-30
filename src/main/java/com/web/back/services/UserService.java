@@ -125,10 +125,6 @@ public class UserService {
             return "ERROR: Fill All the Fields";
         }
 
-        if(request.valuesMatchesFieldsLength()){
-            return "ERROR: The fields should be filled with 8 characters long";
-        }
-
         if(userRepository.findByUsername(request.getUsername()).isPresent()){
             return "ERROR: The Username Already Exist";
         }

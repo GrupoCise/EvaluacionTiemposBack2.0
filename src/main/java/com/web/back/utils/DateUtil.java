@@ -1,5 +1,6 @@
 package com.web.back.utils;
 
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -11,6 +12,12 @@ public class DateUtil {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         return sdf.format(date);
+    }
+
+    public static String timeToString(Time time){
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+
+        return sdf.format(time);
     }
 
     public static String clearSymbols(String dateString){

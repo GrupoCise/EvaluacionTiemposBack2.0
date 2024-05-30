@@ -4,11 +4,14 @@ import com.web.back.builders.ChangeLogBuilder;
 import com.web.back.clients.ZWSHREvaluacioClient;
 import com.web.back.mappers.EvaluationDtoMapper;
 import com.web.back.mappers.EvaluationMapper;
+import com.web.back.mappers.PostEvaluationApiRequestMapper;
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.entities.Evaluation;
 import com.web.back.model.enumerators.IncidencesEnum;
+import com.web.back.model.enumerators.StatusRegistroEnum;
 import com.web.back.model.requests.CambioHorarioRequest;
+import com.web.back.model.requests.PostEvaluationApiRequest;
 import com.web.back.model.requests.UpdateEvaluationRequest;
 import com.web.back.model.responses.CambioHorarioResponse;
 import com.web.back.model.responses.CustomResponse;
@@ -18,6 +21,7 @@ import com.web.back.model.responses.evaluacion.Vacacion;
 import com.web.back.repositories.EvaluationRepository;
 import com.web.back.repositories.UserRepository;
 import com.web.back.utils.DateUtil;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +44,28 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
+    public ResponseEntity<Void> sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina){
+        var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
+
+        evaluations = evaluations.stream()
+                .filter(evaluation -> evaluation.getAprobado() &&
+                        Objects.equals(evaluation.getStatusRegistro(), StatusRegistroEnum.READY_TO_BE_SENT.name()))
+                .toList();
+
+        List<PostEvaluationApiRequest> request = evaluations.stream().map(PostEvaluationApiRequestMapper::mapFrom).toList();
+
+        var response = zwshrEvaluacioClient.postEvaluation(request).block();
+
+        if(response != null && response.getStatusCode().is2xxSuccessful()){
+            evaluations.forEach(evaluation -> evaluation.setStatusRegistro(StatusRegistroEnum.SENT_TO_SAP.name()));
+
+            evaluationRepository.saveAll(evaluations);
+        }
+
+        return response;
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
     public CustomResponse<List<EvaluationDto>> updateEvaluations(UpdateEvaluationRequest request) {
         List<EvaluationDto> updatedEvaluations = request.getUpdatedEvaluations();
         var user = userRepository.findByUsername(request.getUserName()).orElseThrow();
@@ -54,13 +80,13 @@ public class EvaluationService {
             return new CustomResponse<List<EvaluationDto>>().badRequest("No hay empleados que cumplan con los filstros actuales");
         }
 
-//        var cambioHorariosResponse = applyCambiosDeHorario(employees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
-//
-//        if (cambioHorariosResponse.isError()) {
-//            return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
-//        }
+        var cambioHorariosResponse = applyCambiosDeHorario(employees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
 
-        //mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
+        if (cambioHorariosResponse.isError()) {
+            return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
+        }
+
+        mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
         mapVacations(updatedEvaluations, request.getVacaciones());
         mapIncapacidades(updatedEvaluations, request.getIncapacidades());
 

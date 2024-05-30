@@ -24,9 +24,4 @@ public class RegisterUserRequest {
                 profiles == null ||
                 email == null;
     }
-
-    public boolean valuesMatchesFieldsLength() {
-        return !(username.length() >= 8 && password.length() >= 8 && name.length() >= 8 && email.length() >= 10);
-    }
-
 }

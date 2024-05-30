@@ -33,4 +33,20 @@ public class EvaluationController {
 
         return ResponseEntity.ok(evaluationService.updateEvaluations(request));
     }
+
+    @PostMapping(value="evaluations")
+    public ResponseEntity<CustomResponse<Void>> sendApprovedEvaluationsToSap(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina)
+    {
+        if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
+            return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
+        }
+
+        var response = evaluationService.sendApprovedEvaluationsToSap(beginDate, endDate, sociedad, areaNomina);
+
+        if (response != null && response.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.ok(new CustomResponse<Void>().ok(null, "Evaluaciones enviadas exitosamente!"));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<Void>().internalError("Algo fallo al enviar las evaluaciones. Contacta al administrador!"));
+    }
 }
