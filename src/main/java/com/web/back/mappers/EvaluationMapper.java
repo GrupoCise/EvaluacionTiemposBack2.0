@@ -67,10 +67,13 @@ public final class EvaluationMapper {
                 original.getPayload(),
                 evaluation.getAreaNomina(),
                 evaluation.getSociedad(),
-                evaluation.getTipoHrsExtra());
+                evaluation.getTipoHrsExtra(),
+                evaluation.getReferencia(),
+                evaluation.getConsecutivo1(),
+                evaluation.getConsecutivo2());
     }
 
-    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra) {
+    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(fecha);
@@ -96,6 +99,9 @@ public final class EvaluationMapper {
         evaluation.setAreaNomina(areaNomina);
         evaluation.setSociedad(sociedad);
         evaluation.setTipoHrsExtra(tipoHrsExtra);
+        evaluation.setReferencia(referencia);
+        evaluation.setConsecutivo1(consecutivo1);
+        evaluation.setConsecutivo2(consecutivo2);
 
         return evaluation;
     }
