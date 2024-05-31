@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 public class Incapacidad {
-    private Date beginDate;
-    private Date endDate;
+    private String beginDate;
+    private String endDate;
     private String numEmpleado;
     private String referencia;
     private String consecutivo1;

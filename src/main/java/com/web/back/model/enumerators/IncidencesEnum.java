@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum IncidencesEnum {
-    VACATIONS(1),
-    INCAPACITY(2);
+    VACATIONS("VAC"),
+    INCAPACITY("INCAP");
 
-    private final int value;
+    private final String value;
 
-    IncidencesEnum(final int enumValue) {
+    IncidencesEnum(final String enumValue) {
         value = enumValue;
     }
 

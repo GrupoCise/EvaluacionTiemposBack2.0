@@ -87,8 +87,8 @@ public class EvaluationService {
         }
 
         mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
-        mapVacations(updatedEvaluations, request.getVacaciones());
-        mapIncapacidades(updatedEvaluations, request.getIncapacidades());
+        updatedEvaluations = mapVacations(updatedEvaluations, request.getVacaciones());
+        updatedEvaluations = mapIncapacidades(updatedEvaluations, request.getIncapacidades());
 
         List<ChangeLog> changesSummary = new ArrayList<>();
 
@@ -143,12 +143,12 @@ public class EvaluationService {
         }
     }
 
-    private void mapVacations(List<EvaluationDto> updatedEvaluations, List<Vacacion> vacations) {
-        if (vacations == null || vacations.isEmpty()) return;
+    private List<EvaluationDto> mapVacations(List<EvaluationDto> updatedEvaluations, List<Vacacion> vacations) {
+        if (vacations == null || vacations.isEmpty()) return updatedEvaluations;
 
         for (Vacacion vacacion : vacations) {
 
-            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(DateUtil.toStringYYYYMMDD(vacacion.getBeginDate()), DateUtil.toStringYYYYMMDD(vacacion.getEndDate()), vacacion.getNumEmpleado());
+            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(vacacion.getNumEmpleado(), vacacion.getBeginDate(), vacacion.getEndDate());
 
             for (Evaluation evaluation : evaluations) {
                 var evaluationDto = updatedEvaluations.stream()
@@ -157,22 +157,43 @@ public class EvaluationService {
                         .findFirst();
 
                 if (evaluationDto.isPresent()) {
-                    evaluationDto.get().setTipoIncidencia(IncidencesEnum.VACATIONS.getValue());
-                } else {
-                    evaluation.setTipoIncidencia(IncidencesEnum.VACATIONS.getValue());
+                    updatedEvaluations.remove(evaluationDto.get());
+                    var newResultadoGeneral = appendIncidenceToResultadoGenera(evaluationDto.get().getResultadoGeneral(), IncidencesEnum.VACATIONS);
 
+                    evaluationDto.get().setResultadoGeneral(newResultadoGeneral);
+                    updatedEvaluations.add(evaluationDto.get());
+                } else {
+                    var newResultadoGeneral = appendIncidenceToResultadoGenera(evaluation.getResultadoGeneral(), IncidencesEnum.VACATIONS);
+
+                    evaluation.setResultadoGeneral(newResultadoGeneral);
                     updatedEvaluations.add(EvaluationDtoMapper.mapFrom(evaluation));
                 }
             }
         }
+
+        return updatedEvaluations;
     }
 
-    public void mapIncapacidades(List<EvaluationDto> updatedEvaluations, List<Incapacidad> incapacidades) {
-        if (incapacidades == null || incapacidades.isEmpty()) return;
+    private String appendIncidenceToResultadoGenera(String resultadoGeneral, IncidencesEnum incidences){
+        resultadoGeneral = resultadoGeneral == null ? ""  : resultadoGeneral;
+
+        if(resultadoGeneral.isEmpty()){
+            resultadoGeneral = incidences.getValue();
+        }else{
+            if(!resultadoGeneral.contains(incidences.getValue())) {
+                resultadoGeneral = String.join("|", resultadoGeneral, incidences.getValue());
+            }
+        }
+
+        return resultadoGeneral;
+    }
+
+    public List<EvaluationDto> mapIncapacidades(List<EvaluationDto> updatedEvaluations, List<Incapacidad> incapacidades) {
+        if (incapacidades == null || incapacidades.isEmpty()) return updatedEvaluations;
 
         for (Incapacidad incapacidad : incapacidades) {
 
-            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(DateUtil.toStringYYYYMMDD(incapacidad.getBeginDate()), DateUtil.toStringYYYYMMDD(incapacidad.getEndDate()), incapacidad.getNumEmpleado());
+            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(incapacidad.getNumEmpleado(), incapacidad.getBeginDate(), incapacidad.getEndDate());
 
             for (Evaluation evaluation : evaluations) {
                 var evaluationDto = updatedEvaluations.stream()
@@ -181,12 +202,18 @@ public class EvaluationService {
                         .findFirst();
 
                 if (evaluationDto.isPresent()) {
-                    evaluationDto.get().setTipoIncidencia(IncidencesEnum.VACATIONS.getValue());
+                    updatedEvaluations.remove(evaluationDto.get());
+
+                    evaluationDto.get().setResultadoGeneral(
+                            appendIncidenceToResultadoGenera(evaluationDto.get().getResultadoGeneral(), IncidencesEnum.INCAPACITY));
                     evaluationDto.get().setReferencia(incapacidad.getReferencia());
                     evaluationDto.get().setConsecutivo1(incapacidad.getConsecutivo1());
                     evaluationDto.get().setConsecutivo2(incapacidad.getConsecutivo2());
+
+                    updatedEvaluations.add(evaluationDto.get());
                 } else {
-                    evaluation.setTipoIncidencia(IncidencesEnum.INCAPACITY.getValue());
+                    evaluation.setResultadoGeneral(
+                            appendIncidenceToResultadoGenera(evaluation.getResultadoGeneral(), IncidencesEnum.INCAPACITY));
                     evaluation.setReferencia(incapacidad.getReferencia());
                     evaluation.setConsecutivo1(incapacidad.getConsecutivo1());
                     evaluation.setConsecutivo2(incapacidad.getConsecutivo2());
@@ -195,5 +222,7 @@ public class EvaluationService {
                 }
             }
         }
+
+        return updatedEvaluations;
     }
 }

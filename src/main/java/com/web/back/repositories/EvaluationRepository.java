@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface EvaluationRepository extends JpaRepository<Evaluation, Integer> {
     @Query(
-            value = "SELECT * FROM evaluation WHERE fecha BETWEEN :beginDate AND :endDate AND num_empleado = :numEmpleado",
+            value = "SELECT * FROM evaluation WHERE CAST(fecha AS DATE) BETWEEN :beginDate AND :endDate AND num_empleado = :numEmpleado",
             nativeQuery = true
     )
     List<Evaluation> findByFechaAndEmpleado(@Param("numEmpleado") String numEmpleado, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
@@ -25,7 +25,7 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
 
 
     @Query(
-            value = "SELECT * FROM evaluation WHERE fecha BETWEEN :beginDate AND :endDate AND sociedad = :sociedad AND area_nomina = :areaNomina order by fecha",
+            value = "SELECT * FROM evaluation WHERE CAST(fecha AS DATE) BETWEEN :beginDate AND :endDate AND sociedad = :sociedad AND area_nomina = :areaNomina order by fecha",
             nativeQuery = true
     )
     List<Evaluation> findByFechaAndAreaNominaAndSociedad(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("sociedad") String sociedad, @Param("areaNomina") String areaNomina);
