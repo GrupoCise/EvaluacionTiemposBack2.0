@@ -19,7 +19,6 @@ public class UpdateEvaluationRequest {
     private List<EvaluationDto> updatedEvaluations;
     private List<Vacacion> vacaciones;
     private List<Incapacidad> incapacidades;
-    private List<Long> approvedEvaluations;
     private String beginDate;
     private String endDate;
     private String areaNomina;

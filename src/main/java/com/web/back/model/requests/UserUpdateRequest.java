@@ -19,6 +19,7 @@ public class UserUpdateRequest {
     String email;
     Boolean isActive;
     List<Integer> profiles;
+    Integer userLevel;
 
     @JsonIgnore
     public boolean isLongEnough(){
@@ -30,6 +31,7 @@ public class UserUpdateRequest {
         user.setEmail(this.email);
         user.setUsername(this.username);
         user.setActive(this.isActive);
+        user.setUserLevel(this.userLevel);
         return user;
     }
 }

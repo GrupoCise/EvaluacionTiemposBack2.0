@@ -15,7 +15,7 @@ public class RegisterUserRequest {
     String name;
     String email;
     List<Integer> profiles;
-
+    Integer userLevel;
 
     public boolean allFilled() {
         return username == null ||

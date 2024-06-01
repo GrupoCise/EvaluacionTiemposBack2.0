@@ -48,8 +48,9 @@ public class EvaluationService {
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
         evaluations = evaluations.stream()
-                .filter(evaluation -> evaluation.getAprobado() &&
-                        Objects.equals(evaluation.getStatusRegistro(), StatusRegistroEnum.READY_TO_BE_SENT.name()))
+                .filter(evaluation -> evaluation.getApprobationLevel() != null &&
+                        evaluation.getApprobationLevel() == 0 &&
+                        !Objects.equals(evaluation.getStatusRegistro(), StatusRegistroEnum.SENT_TO_SAP.name()))
                 .toList();
 
         List<PostEvaluationApiRequest> request = evaluations.stream().map(PostEvaluationApiRequestMapper::mapFrom).toList();

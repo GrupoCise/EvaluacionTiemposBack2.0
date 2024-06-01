@@ -30,7 +30,6 @@ public class EvaluationDto {
     private String horario;
     private String comentario;
     private String enlace;
-    private Boolean aprobado;
     private Short horasExtra;
     private Short horasTomadas;
     private String areaNomina;
@@ -40,4 +39,5 @@ public class EvaluationDto {
     private String referencia;
     private String consecutivo1;
     private String consecutivo2;
+    private Integer approbationLevel;
 }

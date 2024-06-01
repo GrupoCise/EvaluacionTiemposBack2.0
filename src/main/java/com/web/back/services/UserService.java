@@ -2,8 +2,6 @@ package com.web.back.services;
 
 import com.web.back.model.entities.Profile;
 import com.web.back.model.entities.User;
-import com.web.back.model.entities.UserProfile;
-import com.web.back.model.entities.UserProfileId;
 import com.web.back.model.requests.RegisterUserRequest;
 import com.web.back.model.requests.UserUpdateRequest;
 import com.web.back.repositories.ProfileRepository;
@@ -45,6 +43,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setName(request.getName());
+        user.setUserLevel(request.getUserLevel());
         user.setActive(true);
 
         userRepository.save(user);

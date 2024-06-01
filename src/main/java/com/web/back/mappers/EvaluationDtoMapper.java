@@ -24,7 +24,6 @@ public final class EvaluationDtoMapper {
                 evaluation.getHorario(),
                 evaluation.getComentario(),
                 evaluation.getEnlace(),
-                evaluation.getAprobado(),
                 evaluation.getHorasExtra(),
                 evaluation.getHorasTomadas(),
                 evaluation.getAreaNomina(),
@@ -33,6 +32,7 @@ public final class EvaluationDtoMapper {
                 evaluation.getTipoIncidencia(),
                 evaluation.getReferencia(),
                 evaluation.getConsecutivo1(),
-                evaluation.getConsecutivo2());
+                evaluation.getConsecutivo2(),
+                evaluation.getApprobationLevel());
     }
 }

@@ -85,6 +85,7 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .permissions(userPermissions)
+                .userLevel(user.getUserLevel())
                 .build();
     }
 }

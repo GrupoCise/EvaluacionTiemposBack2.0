@@ -2,6 +2,7 @@ package com.web.back.mappers;
 
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.Evaluation;
+import com.web.back.model.enumerators.StatusRegistroEnum;
 import com.web.back.model.responses.EmployeeApiResponse;
 
 import java.lang.reflect.Field;
@@ -61,7 +62,6 @@ public final class EvaluationMapper {
                 evaluation.getHorario(),
                 evaluation.getComentario(),
                 evaluation.getEnlace(),
-                evaluation.getAprobado(),
                 evaluation.getHorasExtra(),
                 evaluation.getHorasTomadas(),
                 original.getPayload(),
@@ -70,10 +70,11 @@ public final class EvaluationMapper {
                 evaluation.getTipoHrsExtra(),
                 evaluation.getReferencia(),
                 evaluation.getConsecutivo1(),
-                evaluation.getConsecutivo2());
+                evaluation.getConsecutivo2(),
+                evaluation.getApprobationLevel());
     }
 
-    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Boolean aprobado, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2) {
+    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(fecha);
@@ -92,7 +93,6 @@ public final class EvaluationMapper {
         evaluation.setHorario(horario);
         evaluation.setComentario(comentario);
         evaluation.setEnlace(enlace);
-        evaluation.setAprobado(aprobado);
         evaluation.setHorasExtra(horasExtra);
         evaluation.setHorasTomadas(horasTomadas);
         evaluation.setPayload(payload);
@@ -102,6 +102,7 @@ public final class EvaluationMapper {
         evaluation.setReferencia(referencia);
         evaluation.setConsecutivo1(consecutivo1);
         evaluation.setConsecutivo2(consecutivo2);
+        evaluation.setApprobationLevel(approbationLevel);
 
         return evaluation;
     }

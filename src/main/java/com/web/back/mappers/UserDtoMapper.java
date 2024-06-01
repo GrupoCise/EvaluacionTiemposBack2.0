@@ -18,7 +18,8 @@ public final class UserDtoMapper {
                 user.getActive(),
                 user.getProfiles().stream()
                         .map(ProfileDtoMapper::mapFrom)
-                        .toList()
+                        .toList(),
+                user.getUserLevel()
         );
     }
 
@@ -35,7 +36,8 @@ public final class UserDtoMapper {
                 user.getActive(),
                 user.getProfiles().stream()
                         .map(ProfileDtoMapper::mapFrom)
-                        .toList()
+                        .toList(),
+                user.getUserLevel()
         );
     }
 }

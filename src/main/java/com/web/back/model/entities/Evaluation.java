@@ -68,10 +68,6 @@ public class Evaluation {
     private String enlace;
 
     @ColumnDefault("0")
-    @Column(name = "aprobado")
-    private Boolean aprobado;
-
-    @ColumnDefault("0")
     @Column(name = "horas_extra")
     private Short horasExtra;
 
@@ -109,6 +105,9 @@ public class Evaluation {
     @Size(max = 255)
     @Column(name = "consecutivo2")
     private String consecutivo2;
+
+    @Column(name = "approbation_level")
+    private Integer approbationLevel;
 
     public void addPropertyPayload(String key, Object value) {
         this.payload.put(key, value);

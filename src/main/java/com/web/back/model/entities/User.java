@@ -48,6 +48,9 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "profile_id"))
     private Set<Profile> profiles = new LinkedHashSet<>();
 
+    @Column(name = "user_level")
+    private Integer userLevel;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
