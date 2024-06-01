@@ -55,6 +55,10 @@ public class EvaluationService {
 
         List<PostEvaluationApiRequest> request = evaluations.stream().map(PostEvaluationApiRequestMapper::mapFrom).toList();
 
+        if(request.isEmpty()){
+            throw new RuntimeException("No hay evaluaciones pendientes de ser enviadas!");
+        }
+
         var response = zwshrEvaluacioClient.postEvaluation(request).block();
 
         if(response != null && response.getStatusCode().is2xxSuccessful()){
