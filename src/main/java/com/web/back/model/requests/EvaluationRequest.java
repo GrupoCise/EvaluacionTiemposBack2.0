@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEvaluationRequest {
+public class EvaluationRequest {
     private String userName;
     private List<EvaluationDto> updatedEvaluations;
     private List<Vacacion> vacaciones;

@@ -12,7 +12,7 @@ import com.web.back.model.enumerators.IncidencesEnum;
 import com.web.back.model.enumerators.StatusRegistroEnum;
 import com.web.back.model.requests.CambioHorarioRequest;
 import com.web.back.model.requests.PostEvaluationApiRequest;
-import com.web.back.model.requests.UpdateEvaluationRequest;
+import com.web.back.model.requests.EvaluationRequest;
 import com.web.back.model.responses.CambioHorarioResponse;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.responses.EmployeeApiResponse;
@@ -67,7 +67,7 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public CustomResponse<List<EvaluationDto>> updateEvaluations(UpdateEvaluationRequest request) {
+    public CustomResponse<List<EvaluationDto>> updateEvaluations(EvaluationRequest request) {
         List<EvaluationDto> updatedEvaluations = request.getUpdatedEvaluations();
         var user = userRepository.findByUsername(request.getUserName()).orElseThrow();
 
