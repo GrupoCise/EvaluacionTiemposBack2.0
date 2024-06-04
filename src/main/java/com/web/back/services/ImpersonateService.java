@@ -30,7 +30,6 @@ public class ImpersonateService {
         Optional<User> targetUser = userRepository.findByUsername(request.targetUserName());
 
         String error = validateRequest(actor, targetUser);
-        ;
 
         if (error != null) {
             return new CustomResponse<ImpersonateResponse>().badRequest(error);
@@ -86,9 +85,9 @@ public class ImpersonateService {
             return "No se puede actuar como el mismo usuario";
         }
 
-        if (actor.get().getProfiles().stream().anyMatch(profile -> targetUser.get().getProfiles().contains(profile))) {
-            return "No se puede actuar como alguien con el mismo perfil";
-        }
+//        if (actor.get().getProfiles().stream().anyMatch(profile -> targetUser.get().getProfiles().contains(profile))) {
+//            return "No se puede actuar como alguien con el mismo perfil";
+//        }
 
         return null;
     }
