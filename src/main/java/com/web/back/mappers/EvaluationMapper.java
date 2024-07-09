@@ -2,7 +2,6 @@ package com.web.back.mappers;
 
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.Evaluation;
-import com.web.back.model.enumerators.StatusRegistroEnum;
 import com.web.back.model.responses.EmployeeApiResponse;
 
 import java.lang.reflect.Field;
@@ -26,7 +25,7 @@ public final class EvaluationMapper {
         evaluation.setResultadoRegresoPausa(employee.getRHoraEPausa());
         evaluation.setResultadoSalida(employee.getRHoraSalida());
         evaluation.setResultadoGeneral(employee.getEstatusGen());
-        evaluation.setStatusRegistro(employee.getEstatusGen());
+        evaluation.setStatusRegistro(null);
         evaluation.setNumEmpleado(employee.getEmpleado());
         evaluation.setHorario(employee.getHorario());
         evaluation.setHorasExtra(employee.getHrsextradia());

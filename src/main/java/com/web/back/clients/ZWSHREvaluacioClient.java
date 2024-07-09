@@ -2,7 +2,9 @@ package com.web.back.clients;
 
 import com.web.back.model.requests.CambioHorarioRequest;
 import com.web.back.model.requests.PostEvaluationApiRequest;
+import com.web.back.model.requests.RegistroTiemposRequest;
 import com.web.back.model.responses.EmployeeApiResponse;
+import com.web.back.model.responses.RegistroTiemposResponse;
 import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
 import com.web.back.model.responses.CambioHorarioResponse;
 import com.web.back.utils.DateUtil;
@@ -97,6 +99,33 @@ public class ZWSHREvaluacioClient {
                 .header("X-CSRF-Token", authHeaders.getT1())
                 .header("Cookie", authHeaders.getT2())
                 .bodyValue(evaluations)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public Mono<List<RegistroTiemposResponse>> getRegistroTiempos(String username, String beginDate, String endDate) {
+        beginDate = DateUtil.clearSymbols(beginDate);
+        endDate = DateUtil.clearSymbols(endDate);
+
+        return webClient.get()
+                .uri("/RegistroTiempos?sap-client=" + sapClient + "&I_PERNR=" + username + "&I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate)
+                .header("Authorization", getBasicAuthHeaderString())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                }); 
+    }
+
+    public Mono<ResponseEntity<Void>> postRegistroTiempos(List<RegistroTiemposRequest> registroTiemposRequests) {
+        var authHeaders = getAuthRequirements();
+
+        return webClient.post()
+                .uri("/RegistroTiempos")
+                .header("Authorization", getBasicAuthHeaderString())
+                .header("X-CSRF-Token", authHeaders.getT1())
+                .header("Cookie", authHeaders.getT2())
+                .bodyValue(registroTiemposRequests)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();

@@ -3,10 +3,14 @@ package com.web.back.services;
 import com.web.back.clients.ZWSHREvaluacioClient;
 import com.web.back.mappers.EvaluationDtoMapper;
 import com.web.back.mappers.EvaluationMapper;
+import com.web.back.mappers.RegistroTiemposDtoMapper;
 import com.web.back.model.dto.EvaluationDto;
+import com.web.back.model.dto.RegistroTiemposDto;
+import com.web.back.model.requests.RegistroTiemposRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.repositories.EvaluationRepository;
 import com.web.back.utils.DateUtil;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -55,5 +59,19 @@ public class EmployeeService {
                 });
 
         return new CustomResponse<List<EvaluationDto>>().ok(evaluationDtos);
+    }
+
+    public CustomResponse<List<RegistroTiemposDto>> getRegistroTiempos(String beginDate, String endDate, String userName) {
+        List<RegistroTiemposDto> registroTiemposList = zwshrEvaluacioClient.getRegistroTiempos(userName, beginDate, endDate)
+                .map(RegistroTiemposDtoMapper::mapFrom)
+                .block();
+
+        return new CustomResponse<List<RegistroTiemposDto>>().ok(registroTiemposList);
+    }
+
+    public ResponseEntity<Void>  sendTimeSheetChanges(List<RegistroTiemposDto> registroTiemposDtos) {
+        List<RegistroTiemposRequest> request = RegistroTiemposDtoMapper.mapToRequestFrom(registroTiemposDtos);
+
+        return zwshrEvaluacioClient.postRegistroTiempos(request).block();
     }
 }
