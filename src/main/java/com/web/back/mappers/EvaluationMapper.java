@@ -32,6 +32,7 @@ public final class EvaluationMapper {
         evaluation.setTipoHrsExtra(employee.getTipoHrsext());
         evaluation.setSociedad(sociedad);
         evaluation.setAreaNomina(areaNomina);
+        evaluation.setTurn(employee.getTurno());
 
         try {
             Field[] fields = employee.getClass().getDeclaredFields();
@@ -70,10 +71,11 @@ public final class EvaluationMapper {
                 evaluation.getReferencia(),
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2(),
-                evaluation.getApprobationLevel());
+                evaluation.getApprobationLevel(),
+                evaluation.getTurn());
     }
 
-    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel) {
+    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(fecha);
@@ -102,6 +104,7 @@ public final class EvaluationMapper {
         evaluation.setConsecutivo1(consecutivo1);
         evaluation.setConsecutivo2(consecutivo2);
         evaluation.setApprobationLevel(approbationLevel);
+        evaluation.setTurn(turn);
 
         return evaluation;
     }

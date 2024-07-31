@@ -33,6 +33,7 @@ public final class EvaluationDtoMapper {
                 evaluation.getReferencia(),
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2(),
-                evaluation.getApprobationLevel());
+                evaluation.getApprobationLevel(),
+                evaluation.getTurn());
     }
 }

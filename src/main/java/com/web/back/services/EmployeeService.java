@@ -44,8 +44,8 @@ public class EmployeeService {
 
         Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block())
                 .forEach(employee -> {
-                    var optionalEmployee = evaluationRepository.findByFechaAndAreaNominaAndSociedadAndEmpleado(
-                            DateUtil.toStringYYYYMMDD(employee.getFecha()), sociedad, areaNomina, employee.getEmpleado());
+                    var optionalEmployee = evaluationRepository.findByFechaAndHorarioAndTurnAndAreaNominaAndSociedadAndEmpleado(
+                            DateUtil.toStringYYYYMMDD(employee.getFecha()), employee.getHorario(), employee.getTurno(), sociedad, areaNomina, employee.getEmpleado());
 
                     if (optionalEmployee.isPresent()) {
                         return;

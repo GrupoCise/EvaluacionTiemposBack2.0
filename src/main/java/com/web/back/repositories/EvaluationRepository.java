@@ -18,10 +18,10 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
     List<Evaluation> findByFechaAndEmpleado(@Param("numEmpleado") String numEmpleado, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
     @Query(
-            value = "SELECT * FROM evaluation WHERE fecha LIKE :fecha% AND sociedad = :sociedad AND area_nomina = :areaNomina AND num_empleado = :numEmpleado LIMIT 1",
+            value = "SELECT * FROM evaluation WHERE fecha LIKE :fecha% AND horario = :horario AND (:turn IS NULL OR turn = :turn) AND sociedad = :sociedad AND area_nomina = :areaNomina AND num_empleado = :numEmpleado LIMIT 1",
             nativeQuery = true
     )
-    Optional<Evaluation> findByFechaAndAreaNominaAndSociedadAndEmpleado(@Param("fecha") String fecha, @Param("sociedad") String sociedad, @Param("areaNomina") String areaNomina, @Param("numEmpleado") String numEmpleado);
+    Optional<Evaluation> findByFechaAndHorarioAndTurnAndAreaNominaAndSociedadAndEmpleado(@Param("fecha") String fecha, @Param("horario") String horario, @Param("turn") Integer turn, @Param("sociedad") String sociedad, @Param("areaNomina") String areaNomina, @Param("numEmpleado") String numEmpleado);
 
 
     @Query(

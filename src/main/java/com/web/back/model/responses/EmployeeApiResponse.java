@@ -27,4 +27,5 @@ public class EmployeeApiResponse {
     private String horario;
     private Short hrsextradia;
     private String tipoHrsext; //E - no pasa nada
+    private Integer turno;
 }

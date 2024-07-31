@@ -40,4 +40,5 @@ public class EvaluationDto {
     private String consecutivo1;
     private String consecutivo2;
     private Integer approbationLevel;
+    private Integer turn;
 }

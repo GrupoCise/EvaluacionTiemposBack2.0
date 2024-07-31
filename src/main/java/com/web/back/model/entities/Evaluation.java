@@ -109,6 +109,13 @@ public class Evaluation {
     @Column(name = "approbation_level")
     private Integer approbationLevel;
 
+    @ColumnDefault("b'0'")
+    @Column(name = "aprobado")
+    private Boolean aprobado;
+
+    @Column(name = "turn")
+    private Integer turn;
+
     public void addPropertyPayload(String key, Object value) {
         this.payload.put(key, value);
     }
