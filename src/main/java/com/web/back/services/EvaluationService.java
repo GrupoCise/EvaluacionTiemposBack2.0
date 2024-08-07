@@ -97,13 +97,9 @@ public class EvaluationService {
             return new CustomResponse<List<EvaluationDto>>().ok(null, "No hay cambios que actualizar");
         }
 
-        var employees = zwshrEvaluacioClient.getEmployees(request.getUserName(), request.getBeginDate(), request.getEndDate(), request.getSociedad(), request.getAreaNomina()).block();
+        var persistedEmployees = evaluationRepository.findAllById(updatedEvaluations.stream().map(EvaluationDto::getId).toList());
 
-        if (employees == null || employees.isEmpty()) {
-            return new CustomResponse<List<EvaluationDto>>().badRequest("No hay empleados que cumplan con los filstros actuales");
-        }
-
-        var cambioHorariosResponse = applyCambiosDeHorario(employees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
+        var cambioHorariosResponse = applyCambiosDeHorario(persistedEmployees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
 
         if (cambioHorariosResponse.isError()) {
             return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
@@ -116,7 +112,7 @@ public class EvaluationService {
         List<ChangeLog> changesSummary = new ArrayList<>();
 
         var evaluationEntities = updatedEvaluations.stream().map(updated -> {
-            var original = evaluationRepository.findById(updated.getId()).orElseThrow();
+            var original = persistedEmployees.stream().filter(f -> f.getId().equals(updated.getId())).findFirst().orElseThrow();
 
             changesSummary.addAll(ChangeLogBuilder.buildFrom(original, updated, user));
 
@@ -130,10 +126,10 @@ public class EvaluationService {
         return new CustomResponse<List<EvaluationDto>>().ok(updatedEvaluations);
     }
 
-    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<EmployeeApiResponse> employees, List<EvaluationDto> updatedEmployees, String beginDate, String endDate) {
+    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<Evaluation> employees, List<EvaluationDto> updatedEmployees, String beginDate, String endDate) {
         var updatesToApply = employees.stream()
                 .flatMap(current -> updatedEmployees.stream()
-                        .filter(updated -> current.getEmpleado().equals(updated.getNumEmpleado()))
+                        .filter(updated -> current.getNumEmpleado().equals(updated.getNumEmpleado()))
                         .filter(updated -> !current.getHorario().equals(updated.getHorario()))
                         .filter(updated -> DateUtil.toStringYYYYMMDD(current.getFecha())
                                 .equals(DateUtil.toStringYYYYMMDD(updated.getFecha())))

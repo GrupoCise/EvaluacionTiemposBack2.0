@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -14,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class EvaluationDto {
     private Integer id;
-    private Date fecha;
+    private LocalDate fecha;
     private Time horaEntrada;
     private Time horaPausa;
     private Time horaRegresoPausa;

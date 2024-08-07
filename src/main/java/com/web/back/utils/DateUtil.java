@@ -2,16 +2,17 @@ package com.web.back.utils;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class DateUtil {
 
     private DateUtil(){}
 
-    public static String toStringYYYYMMDD(Date date){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    public static String toStringYYYYMMDD(LocalDate date){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        return sdf.format(date);
+        return date.format(formatter);
     }
 
     public static String timeToString(Time time){

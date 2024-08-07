@@ -9,7 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
@@ -23,7 +23,7 @@ public class Evaluation {
     private Integer id;
 
     @Column(name = "fecha")
-    private Date fecha;
+    private LocalDate fecha;
 
     @Column(name = "hora_entrada")
     private Time horaEntrada;

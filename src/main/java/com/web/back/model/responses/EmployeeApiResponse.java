@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 import java.sql.Time;
 
 @AllArgsConstructor
@@ -14,7 +15,7 @@ import java.sql.Time;
 @Getter
 public class EmployeeApiResponse {
     private String empleado;
-    private Date fecha;
+    private LocalDate fecha;
     private Time horaEntrada;
     private Time horaSPausa;
     private Time horaEPausa;

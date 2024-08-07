@@ -67,10 +67,6 @@ public class UserService {
 
     @Transactional(rollbackFor = {Exception.class})
     public Mono<User> update(Integer id, UserUpdateRequest userUpdate) {
-        if (!userUpdate.isLongEnough()) {
-            return Mono.error(new Throwable("ERROR: The fields should be filled with 8 characters long"));
-        }
-
         User user = userRepository.findById(id).get();
         user = userUpdate.changeUser(user);
 
@@ -121,15 +117,15 @@ public class UserService {
 
     private String validateUserRegisterRequest(RegisterUserRequest request) {
         if(request.allFilled()){
-            return "ERROR: Fill All the Fields";
+            return "Informacion faltante!";
         }
 
         if(userRepository.findByUsername(request.getUsername()).isPresent()){
-            return "ERROR: The Username Already Exist";
+            return "El usuario ya existe!";
         }
 
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
-            return "ERROR: The Email is Already in Use";
+            return "El email ya esta en uso!";
         }
 
         return null;

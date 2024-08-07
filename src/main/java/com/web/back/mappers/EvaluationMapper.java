@@ -6,7 +6,8 @@ import com.web.back.model.responses.EmployeeApiResponse;
 
 import java.lang.reflect.Field;
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public final class EvaluationMapper {
@@ -75,7 +76,7 @@ public final class EvaluationMapper {
                 evaluation.getTurn());
     }
 
-    public static Evaluation toEvaluation(Date fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn) {
+    public static Evaluation toEvaluation(LocalDate fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(fecha);
