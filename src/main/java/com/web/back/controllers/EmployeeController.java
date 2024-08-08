@@ -1,7 +1,7 @@
 package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
-import com.web.back.model.dto.EvaluationDto;
+import com.web.back.model.dto.EvaluationsDataDto;
 import com.web.back.model.dto.RegistroTiemposDto;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.services.EmployeeService;
@@ -25,9 +25,9 @@ public class EmployeeController {
     }
 
     @GetMapping(value = "getAll")
-    public ResponseEntity<CustomResponse<List<EvaluationDto>>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
@@ -36,9 +36,9 @@ public class EmployeeController {
     }
 
     @GetMapping(value = "getAll/sync")
-    public ResponseEntity<CustomResponse<List<EvaluationDto>>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken)) && !PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);

@@ -116,6 +116,14 @@ public class Evaluation {
     @Column(name = "turn")
     private Integer turn;
 
+    @Size(max = 350)
+    @Column(name = "employee_name", length = 350)
+    private String employeeName;
+
+    @Size(max = 100)
+    @Column(name = "payroll", length = 100)
+    private String payroll;
+
     public void addPropertyPayload(String key, Object value) {
         this.payload.put(key, value);
     }

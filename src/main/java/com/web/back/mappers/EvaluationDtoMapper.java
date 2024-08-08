@@ -20,7 +20,7 @@ public final class EvaluationDtoMapper {
                 evaluation.getResultadoGeneral(),
                 evaluation.getStatusRegistro(),
                 evaluation.getNumEmpleado(),
-                "",
+                evaluation.getEmployeeName(),
                 evaluation.getHorario(),
                 evaluation.getComentario(),
                 evaluation.getEnlace(),
@@ -34,6 +34,7 @@ public final class EvaluationDtoMapper {
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2(),
                 evaluation.getApprobationLevel(),
-                evaluation.getTurn());
+                evaluation.getTurn(),
+                evaluation.getPayroll());
     }
 }

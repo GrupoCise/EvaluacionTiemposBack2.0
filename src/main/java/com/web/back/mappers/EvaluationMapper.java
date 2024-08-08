@@ -3,17 +3,17 @@ package com.web.back.mappers;
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.Evaluation;
 import com.web.back.model.responses.EmployeeApiResponse;
+import com.web.back.model.responses.evaluacion.Employee;
 
 import java.lang.reflect.Field;
 import java.sql.Time;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 public final class EvaluationMapper {
     private EvaluationMapper() {}
 
-    public static Evaluation mapFrom(EmployeeApiResponse employee, String sociedad, String areaNomina) {
+    public static Evaluation mapFrom(EmployeeApiResponse employee, Employee employeeData, String sociedad, String areaNomina) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(employee.getFecha());
@@ -34,10 +34,13 @@ public final class EvaluationMapper {
         evaluation.setSociedad(sociedad);
         evaluation.setAreaNomina(areaNomina);
         evaluation.setTurn(employee.getTurno());
+        evaluation.setEmployeeName(employeeData.getNombre());
+        evaluation.setPayroll(employeeData.getVdsk1());
 
         try {
             Field[] fields = employee.getClass().getDeclaredFields();
             for (Field field : fields) {
+                field.setAccessible(true);
                 evaluation.addPropertyPayload(field.getName(), field.get(employee));
             }
         }catch (Exception ignored) {}
@@ -73,10 +76,12 @@ public final class EvaluationMapper {
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2(),
                 evaluation.getApprobationLevel(),
-                evaluation.getTurn());
+                evaluation.getTurn(),
+                evaluation.getEmpleadoName(),
+                evaluation.getPayroll());
     }
 
-    public static Evaluation toEvaluation(LocalDate fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn) {
+    public static Evaluation toEvaluation(LocalDate fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn, String employeeName, String payroll) {
         var evaluation = new Evaluation();
 
         evaluation.setFecha(fecha);
@@ -106,6 +111,8 @@ public final class EvaluationMapper {
         evaluation.setConsecutivo2(consecutivo2);
         evaluation.setApprobationLevel(approbationLevel);
         evaluation.setTurn(turn);
+        evaluation.setEmployeeName(employeeName);
+        evaluation.setPayroll(payroll);
 
         return evaluation;
     }
