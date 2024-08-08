@@ -31,4 +31,12 @@ public class CatIncidence {
     @Column(name = "id_retorno", length = 50)
     private String idRetorno;
 
+    @Size(max = 20)
+    @Column(name = "sociedad", length = 20)
+    private String sociedad;
+
+    @Size(max = 20)
+    @Column(name = "area_nomina", length = 20)
+    private String areaNomina;
+
 }

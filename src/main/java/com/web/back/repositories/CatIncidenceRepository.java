@@ -9,9 +9,7 @@ import java.util.List;
 
 public interface CatIncidenceRepository extends JpaRepository<CatIncidence, Integer> {
 
-    @Query("SELECT c FROM CatIncidence c WHERE c.idRegla IN :idReglas AND c.idRetorno IN :idRetornos AND c.mandt IN :mandts")
-    List<CatIncidence> findAllByIdReglasAndIdRetornosAndMandt(@Param("idReglas") List<String> idReglas,
-                                                              @Param("idRetornos") List<String> idRetornos,
-                                                              @Param("mandts") List<String> mandts);
-
+    @Query("SELECT c FROM CatIncidence c WHERE c.sociedad = :sociedad AND c.areaNomina = :areaNomina")
+    List<CatIncidence> findAllByIdSociedadAndAreaNomina(@Param("sociedad") String sociedad,
+                                                              @Param("areaNomina") String areaNomina);
 }

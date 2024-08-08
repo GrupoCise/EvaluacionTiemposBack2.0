@@ -2,7 +2,6 @@ package com.web.back.services;
 
 import com.web.back.clients.ZWSHREvaluacioClient;
 import com.web.back.mappers.*;
-import com.web.back.model.dto.CatIncidenceEmployeeDto;
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.dto.EvaluationsDataDto;
 import com.web.back.model.dto.RegistroTiemposDto;
@@ -21,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class EmployeeService {
@@ -57,15 +56,19 @@ public class EmployeeService {
         var savedEmployeesOnEvaluation = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
         if (!savedEmployeesOnEvaluation.isEmpty()) {
-            var incidencesEmployees = catIncidenceEmployeeRepository.findAllByEmployeeNums(savedEmployeesOnEvaluation.stream().map(Evaluation::getNumEmpleado).distinct().toList()).stream()
-                    .collect(Collectors.groupingBy(CatIncidenceEmployee::getId, Collectors.mapping(CatIncidenceEmployee::getCatIncidence, Collectors.toList())))
-                    .entrySet().stream()
-                    .map(e -> new CatIncidenceEmployeeDto(e.getKey().getEmployeeNum(), e.getValue().stream().map(CatIncidenceDtoMapper::map).toList()))
+            var filters = Objects.requireNonNull(filtersService.getFilters(userName).block());
+
+            var incidences = persistIncidencesCatalog(List.of(), filters, sociedad, areaNomina);
+
+            var incidencesEmployees = catIncidenceRepository.findAllByIdSociedadAndAreaNomina(sociedad, areaNomina);
+
+            var catIncidences = Stream.of(incidences, incidencesEmployees)
+                    .flatMap(Collection::stream).distinct()
+                    .map(CatIncidenceDtoMapper::map)
                     .toList();
 
             return new CustomResponse<EvaluationsDataDto>().ok(
-                    new EvaluationsDataDto(savedEmployeesOnEvaluation.stream().map(EvaluationDtoMapper::mapFrom).toList(),
-                            incidencesEmployees)
+                    new EvaluationsDataDto(savedEmployeesOnEvaluation.stream().map(EvaluationDtoMapper::mapFrom).toList(), catIncidences)
             );
         }
 
@@ -76,25 +79,18 @@ public class EmployeeService {
         List<EvaluationDto> evaluationDtos = new ArrayList<>();
 
         var evaluations = Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block());
+        var filters = Objects.requireNonNull(filtersService.getFilters(userName).block());
 
-        var enrichedEmployeesDataMap = getEnrichedEmployeesDataMap(evaluations);
+        evaluations.forEach(employee -> processEmployee(evaluationDtos, employee, filters, sociedad, areaNomina));
 
-        evaluations.forEach(employee -> processEmployee(evaluationDtos, employee, enrichedEmployeesDataMap, sociedad, areaNomina));
+        List<CatIncidence> incidences = persistIncidencesCatalog(evaluations.stream().map(EmployeeApiResponse::getEmpleado).toList(), filters, sociedad, areaNomina);
 
-        List<CatIncidenceEmployee> incidencesEmployee = persistIncidencesCatalog(enrichedEmployeesDataMap);
-
-        var incidencesEmployees = incidencesEmployee.stream()
-                .collect(Collectors.groupingBy(CatIncidenceEmployee::getId, Collectors.mapping(CatIncidenceEmployee::getCatIncidence, Collectors.toList())))
-                .entrySet().stream()
-                .map(e -> new CatIncidenceEmployeeDto(e.getKey().getEmployeeNum(), e.getValue().stream().map(CatIncidenceDtoMapper::map).toList()))
-                .toList();
-
-        return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos, incidencesEmployees));
+        return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos, incidences.stream().map(CatIncidenceDtoMapper::map).toList()));
     }
 
     private void processEmployee(List<EvaluationDto> evaluationDtos, EmployeeApiResponse employee,
-                                 Map<String, EvaluacionApiResponse> enrichedEmployeesDataMap, String sociedad, String areaNomina) {
-        var employeeData = getEmployeeData(enrichedEmployeesDataMap, employee);
+                                 EvaluacionApiResponse filters, String sociedad, String areaNomina) {
+        var employeeData = getEmployeeData(filters, employee);
 
         var optionalEmployee = evaluationRepository.findByFechaAndHorarioAndTurnAndAreaNominaAndSociedadAndEmpleado(
                 DateUtil.toStringYYYYMMDD(employee.getFecha()), employee.getHorario(), employee.getTurno(), sociedad, areaNomina, employee.getEmpleado());
@@ -107,7 +103,9 @@ public class EmployeeService {
     }
 
     private void updateExistingEmployee(List<EvaluationDto> evaluationDtos, Employee employeeData, Evaluation employee) {
-        if (employeeData != null) {
+        if (employeeData != null &&
+                !employeeData.getVdsk1().equals(employee.getPayroll()) &&
+                !employeeData.getNombre().equals(employee.getEmployeeName())) {
             employee.setEmployeeName(employee.getEmployeeName());
             employee.setPayroll(employeeData.getVdsk1());
             evaluationRepository.save(employee);
@@ -121,62 +119,49 @@ public class EmployeeService {
         evaluationDtos.add(EvaluationDtoMapper.mapFrom(evaluation));
     }
 
-    private Employee getEmployeeData(Map<String, EvaluacionApiResponse> enrichedEmployeesDataMap, EmployeeApiResponse employee) {
-        var filtersResponse = enrichedEmployeesDataMap.get(employee.getEmpleado());
-        if (filtersResponse != null && !filtersResponse.getEmpleados().isEmpty()) {
-            var employeeData = filtersResponse.getEmpleados().stream().filter(f -> f.getPernr().equals(employee.getEmpleado())).findFirst();
-            if (employeeData.isPresent()) {
-                return employeeData.get();
-            }
-        }
-        return null;
+    private Employee getEmployeeData(EvaluacionApiResponse filters, EmployeeApiResponse employee) {
+        var employeeData = filters.getEmpleados().stream().filter(f -> f.getPernr().equals(employee.getEmpleado())).findFirst();
+        return employeeData.orElse(null);
     }
 
-    private Map<String, EvaluacionApiResponse> getEnrichedEmployeesDataMap(List<EmployeeApiResponse> evaluations) {
-        Map<String, EvaluacionApiResponse> map = new HashMap<>();
-        for (String employeeNumber : evaluations.stream().map(EmployeeApiResponse::getEmpleado).distinct().toList()) {
-            map.put(employeeNumber, Optional.ofNullable(filtersService.getFilters(employeeNumber).block()).orElse(new EvaluacionApiResponse()));
-        }
-        return map;
-    }
-
-    private List<CatIncidenceEmployee> persistIncidencesCatalog(Map<String, EvaluacionApiResponse> enrichedEmployeesDataMap) {
+    private List<CatIncidence> persistIncidencesCatalog(List<String> employees, EvaluacionApiResponse filters, String sociedad, String areaNomina) {
         List<CatIncidenceEmployee> incidencesEmployee = new ArrayList<>();
 
-        var incidences = enrichedEmployeesDataMap.values().stream()
-                .map(EvaluacionApiResponse::getCatIncidencias)
-                .flatMap(Collection::stream)
-                .distinct()
-                .toList();
+        var incidences = filters.getCatIncidencias();
 
-        var existentIncidences = catIncidenceRepository.findAllByIdReglasAndIdRetornosAndMandt(
-                incidences.stream().map(Incidencia::getIdRegla).toList(),
-                incidences.stream().map(Incidencia::getIdRetorno).toList(),
-                incidences.stream().map(Incidencia::getMandt).toList()
-        );
+        var existentIncidences = catIncidenceRepository.findAllByIdSociedadAndAreaNomina(sociedad, areaNomina);
 
         var newIncidences = incidences.stream()
                 .filter(i -> existentIncidences.stream().noneMatch(c ->
-                        c.getIdRegla().equals(i.getIdRegla()) &&
-                                c.getIdRetorno().equals(i.getIdRetorno()) &&
-                                c.getMandt().equals(i.getMandt())
-                ))
-                .map(IncidenciaToCatIncidenceMapper::map)
+                                c.getIdRegla().equals(i.getIdRegla()) &&
+                                        c.getIdRetorno().equals(i.getIdRetorno()) &&
+                                        c.getMandt().equals(i.getMandt()) &&
+                                        c.getSociedad().equals(sociedad) &&
+                                        c.getAreaNomina().equals(areaNomina)
+                        )
+                )
+                .map(m -> IncidenciaToCatIncidenceMapper.map(m, sociedad, areaNomina))
                 .toList();
 
-        catIncidenceRepository.saveAll(newIncidences);
+        if (!newIncidences.isEmpty()) {
+            catIncidenceRepository.saveAll(newIncidences);
+        }
 
-        enrichedEmployeesDataMap.forEach((employeeNumber, evaluacionApiResponse) -> {
-            for (Incidencia incidencia : evaluacionApiResponse.getCatIncidencias()) {
-                var incidence = existentIncidences.stream().filter(c ->
-                        c.getIdRegla().equals(incidencia.getIdRegla()) &&
-                                c.getIdRetorno().equals(incidencia.getIdRetorno()) &&
-                                c.getMandt().equals(incidencia.getMandt())
-                ).findFirst().or(() -> newIncidences.stream().filter(c ->
-                        c.getIdRegla().equals(incidencia.getIdRegla()) &&
-                                c.getIdRetorno().equals(incidencia.getIdRetorno()) &&
-                                c.getMandt().equals(incidencia.getMandt())
-                ).findFirst());
+        var catIncidences = Stream.of(existentIncidences, newIncidences)
+                .flatMap(Collection::stream).toList();
+
+        var incidencesEmployees = catIncidenceEmployeeRepository.findAllByEmployeeNums(employees);
+
+        for (String employeeNumber : employees) {
+            for (Incidencia incidencia : incidences) {
+                var incidence = catIncidences.stream()
+                        .filter(c ->
+                                c.getIdRegla().equals(incidencia.getIdRegla()) &&
+                                        c.getIdRetorno().equals(incidencia.getIdRetorno()) &&
+                                        c.getMandt().equals(incidencia.getMandt()) &&
+                                        c.getSociedad().equals(sociedad) &&
+                                        c.getAreaNomina().equals(areaNomina)
+                        ).findFirst();
 
                 if (incidence.isEmpty()) {
                     throw new RuntimeException(String.format("Error al persisitir la incidencia %s", incidencia.getIdRegla()));
@@ -186,7 +171,7 @@ public class EmployeeService {
                 catIncidenceEmployeeId.setEmployeeNum(employeeNumber);
                 catIncidenceEmployeeId.setCatIncidenceId(incidence.get().getId());
 
-                CatIncidenceEmployee catIncidenceEmployee = catIncidenceEmployeeRepository.findById(catIncidenceEmployeeId)
+                CatIncidenceEmployee catIncidenceEmployee = incidencesEmployees.stream().filter(f -> f.getId().equals(catIncidenceEmployeeId)).findFirst()
                         .orElseGet(() -> {
                             CatIncidenceEmployee newCatIncidenceEmployee = new CatIncidenceEmployee();
                             newCatIncidenceEmployee.setId(catIncidenceEmployeeId);
@@ -195,12 +180,14 @@ public class EmployeeService {
 
                 catIncidenceEmployee.setCatIncidence(incidence.get());
 
-                catIncidenceEmployeeRepository.save(catIncidenceEmployee);
-
                 incidencesEmployee.add(catIncidenceEmployee);
             }
-        });
+        }
 
-        return incidencesEmployee;
+        if (!incidencesEmployee.isEmpty()) {
+            catIncidenceEmployeeRepository.saveAll(incidencesEmployee);
+        }
+
+        return catIncidences;
     }
 }

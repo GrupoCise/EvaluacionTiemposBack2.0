@@ -6,7 +6,7 @@ import com.web.back.model.responses.evaluacion.Incidencia;
 public final class IncidenciaToCatIncidenceMapper {
     private IncidenciaToCatIncidenceMapper() {}
 
-    public static CatIncidence map(Incidencia incidencia) {
+    public static CatIncidence map(Incidencia incidencia, String sociedad, String areaNomina) {
         if (incidencia == null) {
             return null;
         }
@@ -16,6 +16,8 @@ public final class IncidenciaToCatIncidenceMapper {
         catIncidence.setIdRegla(incidencia.getIdRegla());
         catIncidence.setDescripcion(incidencia.getDescripcion());
         catIncidence.setIdRetorno(incidencia.getIdRetorno());
+        catIncidence.setSociedad(sociedad);
+        catIncidence.setAreaNomina(areaNomina);
 
         return catIncidence;
     }
