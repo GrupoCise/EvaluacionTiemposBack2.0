@@ -52,8 +52,18 @@ public class AuthService {
         return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
     }
 
-    public CustomResponse<AuthResponse> getTokenForUser(String userName){
+    public CustomResponse<AuthResponse> getTokenForUser(String loggedUserName, String userName){
         User user = userService.getByUserName(userName).orElseThrow();
+        User loggedUser = userService.getByUserName(loggedUserName).orElseThrow();
+
+        if (loggedUser.getUserLevel() == null || user.getUserLevel() == null) {
+            loggedUser.setUserLevel(loggedUser.getUserLevel() == null ? 0 : loggedUser.getUserLevel());
+            user.setUserLevel(user.getUserLevel() == null ? 0 : user.getUserLevel());
+        }
+
+        if (loggedUser.getUserLevel() < user.getUserLevel()) {
+            user.setUserLevel(loggedUser.getUserLevel());
+        }
 
         return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
     }

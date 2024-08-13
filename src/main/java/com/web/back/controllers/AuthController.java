@@ -39,7 +39,7 @@ public class AuthController {
             return ResponseEntity.ok(new CustomResponse<AuthResponse>().badRequest("El usuario actual no puede actuar como el usuario deseado"));
         }
 
-        return ResponseEntity.ok(authService.getTokenForUser(targetUserName));
+        return ResponseEntity.ok(authService.getTokenForUser(userName, targetUserName));
     }
 
 
