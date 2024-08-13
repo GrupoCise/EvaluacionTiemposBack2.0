@@ -34,8 +34,11 @@ public final class EvaluationMapper {
         evaluation.setSociedad(sociedad);
         evaluation.setAreaNomina(areaNomina);
         evaluation.setTurn(employee.getTurno());
-        evaluation.setEmployeeName(employeeData.getNombre());
-        evaluation.setPayroll(employeeData.getVdsk1());
+
+        if(employeeData != null) {
+            evaluation.setEmployeeName(employeeData.getNombre());
+            evaluation.setPayroll(employeeData.getVdsk1());
+        }
 
         try {
             Field[] fields = employee.getClass().getDeclaredFields();

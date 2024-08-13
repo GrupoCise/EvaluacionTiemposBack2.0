@@ -164,7 +164,9 @@ public class EmployeeService {
                         ).findFirst();
 
                 if (incidence.isEmpty()) {
-                    throw new RuntimeException(String.format("Error al persisitir la incidencia %s", incidencia.getIdRegla()));
+                    //TODO: seems that this is possible, so replace this by a log when a log startegy gets implemented
+                    System.console().printf("Error al persisitir la incidencia %s", incidencia.getIdRegla());
+                    continue;
                 }
 
                 CatIncidenceEmployeeId catIncidenceEmployeeId = new CatIncidenceEmployeeId();
