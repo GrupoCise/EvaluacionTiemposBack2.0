@@ -8,16 +8,12 @@ import com.web.back.mappers.PostEvaluationApiRequestMapper;
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.entities.Evaluation;
-import com.web.back.model.enumerators.IncidencesEnum;
 import com.web.back.model.enumerators.StatusRegistroEnum;
 import com.web.back.model.requests.CambioHorarioRequest;
 import com.web.back.model.requests.PostEvaluationApiRequest;
 import com.web.back.model.requests.EvaluationRequest;
 import com.web.back.model.responses.CambioHorarioResponse;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.model.responses.EmployeeApiResponse;
-import com.web.back.model.responses.evaluacion.Incapacidad;
-import com.web.back.model.responses.evaluacion.Vacacion;
 import com.web.back.repositories.EvaluationRepository;
 import com.web.back.repositories.UserRepository;
 import com.web.back.utils.DateUtil;
@@ -49,8 +45,8 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Void deleteEvaluations(List<Integer> evaluationsToRemove){
-        if(evaluationsToRemove.isEmpty()){
+    public Void deleteEvaluations(List<Integer> evaluationsToRemove) {
+        if (evaluationsToRemove.isEmpty()) {
             return null;
         }
 
@@ -62,7 +58,7 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public ResponseEntity<Void> sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina){
+    public ResponseEntity<Void> sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina) {
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
         evaluations = evaluations.stream()
@@ -73,13 +69,13 @@ public class EvaluationService {
 
         List<PostEvaluationApiRequest> request = evaluations.stream().map(PostEvaluationApiRequestMapper::mapFrom).toList();
 
-        if(request.isEmpty()){
+        if (request.isEmpty()) {
             throw new RuntimeException("No hay evaluaciones pendientes de ser enviadas!");
         }
 
         var response = zwshrEvaluacioClient.postEvaluation(request).block();
 
-        if(response != null && response.getStatusCode().is2xxSuccessful()){
+        if (response != null && response.getStatusCode().is2xxSuccessful()) {
             evaluations.forEach(evaluation -> evaluation.setStatusRegistro(StatusRegistroEnum.SENT_TO_SAP.name()));
 
             evaluationRepository.saveAll(evaluations);
@@ -106,8 +102,6 @@ public class EvaluationService {
         }
 
         mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
-        updatedEvaluations = mapVacations(updatedEvaluations, request.getVacaciones());
-        updatedEvaluations = mapIncapacidades(updatedEvaluations, request.getIncapacidades());
 
         List<ChangeLog> changesSummary = new ArrayList<>();
 
@@ -143,7 +137,12 @@ public class EvaluationService {
         }
 
         return zwshrEvaluacioClient.postCambioHorario(beginDate, endDate, updatesToApply)
-                .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(result)).block();
+                .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(
+                        result.stream().filter(f -> f.empleado() != null && f.fecha() != null &&
+                                updatesToApply.stream().anyMatch(a ->
+                                        a.empleado() != null && a.fecha() != null &&
+                                                a.empleado().equals(f.empleado()) &&
+                                                a.fecha().equals(f.empleado()))).toList())).block();
     }
 
     private void mapAuthorizedCambiosHorario(List<CambioHorarioResponse> cambioHorarios, List<EvaluationDto> updatedEvaluations) {
@@ -160,88 +159,5 @@ public class EvaluationService {
                 evaluationDto.setResultadoGeneral(affectedRegistryForEmployee.get().estatusGen());
             }
         }
-    }
-
-    private List<EvaluationDto> mapVacations(List<EvaluationDto> updatedEvaluations, List<Vacacion> vacations) {
-        if (vacations == null || vacations.isEmpty()) return updatedEvaluations;
-
-        for (Vacacion vacacion : vacations) {
-
-            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(vacacion.getNumEmpleado(), vacacion.getBeginDate(), vacacion.getEndDate());
-
-            for (Evaluation evaluation : evaluations) {
-                var evaluationDto = updatedEvaluations.stream()
-                        .filter(f -> Objects.equals(f.getNumEmpleado(), evaluation.getNumEmpleado()))
-                        .filter(f -> DateUtil.toStringYYYYMMDD(f.getFecha()).equals(DateUtil.toStringYYYYMMDD(evaluation.getFecha())))
-                        .findFirst();
-
-                if (evaluationDto.isPresent()) {
-                    updatedEvaluations.remove(evaluationDto.get());
-                    var newResultadoGeneral = appendIncidenceToResultadoGenera(evaluationDto.get().getResultadoGeneral(), IncidencesEnum.VACATIONS);
-
-                    evaluationDto.get().setResultadoGeneral(newResultadoGeneral);
-                    updatedEvaluations.add(evaluationDto.get());
-                } else {
-                    var newResultadoGeneral = appendIncidenceToResultadoGenera(evaluation.getResultadoGeneral(), IncidencesEnum.VACATIONS);
-
-                    evaluation.setResultadoGeneral(newResultadoGeneral);
-                    updatedEvaluations.add(EvaluationDtoMapper.mapFrom(evaluation));
-                }
-            }
-        }
-
-        return updatedEvaluations;
-    }
-
-    private String appendIncidenceToResultadoGenera(String resultadoGeneral, IncidencesEnum incidences){
-        resultadoGeneral = resultadoGeneral == null ? ""  : resultadoGeneral;
-
-        if(resultadoGeneral.isEmpty()){
-            resultadoGeneral = incidences.getValue();
-        }else{
-            if(!resultadoGeneral.contains(incidences.getValue())) {
-                resultadoGeneral = String.join("|", resultadoGeneral, incidences.getValue());
-            }
-        }
-
-        return resultadoGeneral;
-    }
-
-    public List<EvaluationDto> mapIncapacidades(List<EvaluationDto> updatedEvaluations, List<Incapacidad> incapacidades) {
-        if (incapacidades == null || incapacidades.isEmpty()) return updatedEvaluations;
-
-        for (Incapacidad incapacidad : incapacidades) {
-
-            List<Evaluation> evaluations = evaluationRepository.findByFechaAndEmpleado(incapacidad.getNumEmpleado(), incapacidad.getBeginDate(), incapacidad.getEndDate());
-
-            for (Evaluation evaluation : evaluations) {
-                var evaluationDto = updatedEvaluations.stream()
-                        .filter(f -> Objects.equals(f.getNumEmpleado(), evaluation.getNumEmpleado()))
-                        .filter(f -> DateUtil.toStringYYYYMMDD(f.getFecha()).equals(DateUtil.toStringYYYYMMDD(evaluation.getFecha())))
-                        .findFirst();
-
-                if (evaluationDto.isPresent()) {
-                    updatedEvaluations.remove(evaluationDto.get());
-
-                    evaluationDto.get().setResultadoGeneral(
-                            appendIncidenceToResultadoGenera(evaluationDto.get().getResultadoGeneral(), IncidencesEnum.INCAPACITY));
-                    evaluationDto.get().setReferencia(incapacidad.getReferencia());
-                    evaluationDto.get().setConsecutivo1(incapacidad.getConsecutivo1());
-                    evaluationDto.get().setConsecutivo2(incapacidad.getConsecutivo2());
-
-                    updatedEvaluations.add(evaluationDto.get());
-                } else {
-                    evaluation.setResultadoGeneral(
-                            appendIncidenceToResultadoGenera(evaluation.getResultadoGeneral(), IncidencesEnum.INCAPACITY));
-                    evaluation.setReferencia(incapacidad.getReferencia());
-                    evaluation.setConsecutivo1(incapacidad.getConsecutivo1());
-                    evaluation.setConsecutivo2(incapacidad.getConsecutivo2());
-
-                    updatedEvaluations.add(EvaluationDtoMapper.mapFrom(evaluation));
-                }
-            }
-        }
-
-        return updatedEvaluations;
     }
 }

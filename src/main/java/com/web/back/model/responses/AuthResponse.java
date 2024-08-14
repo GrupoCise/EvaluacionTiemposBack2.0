@@ -15,4 +15,6 @@ public class AuthResponse {
     String token;
     List<String> permissions;
     Integer userLevel;
+    List<String> roles;
+    String fullName;
 }

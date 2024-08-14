@@ -13,10 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class AuthService {
@@ -98,10 +95,17 @@ public class AuthService {
 
         String token = jwtService.getToken(user, String.join("|", userPermissions));
 
+        var profiles = user.getProfiles().stream()
+                .filter(f -> f.getDescription() != null)
+                .map(p -> p.getDescription().toUpperCase(Locale.ROOT)
+                        .replaceAll("\\s+","")).toList();
+
         return AuthResponse.builder()
                 .token(token)
                 .permissions(userPermissions)
                 .userLevel(user.getUserLevel())
+                .roles(profiles)
+                .fullName(user.getName())
                 .build();
     }
 }
