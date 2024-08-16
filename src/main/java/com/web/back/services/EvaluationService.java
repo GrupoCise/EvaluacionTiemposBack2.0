@@ -124,6 +124,7 @@ public class EvaluationService {
         var updatesToApply = employees.stream()
                 .flatMap(current -> updatedEmployees.stream()
                         .filter(updated -> current.getNumEmpleado().equals(updated.getNumEmpleado()))
+                        .filter(updated -> current.getHorario() != null)
                         .filter(updated -> !current.getHorario().equals(updated.getHorario()))
                         .filter(updated -> DateUtil.toStringYYYYMMDD(current.getFecha())
                                 .equals(DateUtil.toStringYYYYMMDD(updated.getFecha())))
