@@ -18,6 +18,14 @@ public class FiltersService {
     public Mono<EvaluacionApiResponse> getFilters(String userName) {
         String currentDate = new Date(System.currentTimeMillis()).toString();
 
-        return zwshrEvaluacioClient.getEvaluacion(userName, currentDate, currentDate);
+        try{
+            var r = zwshrEvaluacioClient.getEvaluacion(userName, currentDate, currentDate);
+
+            return r;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return null;
+        }
     }
 }
