@@ -84,7 +84,6 @@ public class AuthService {
                     return profilePermissions.stream().map(Permission::getKeyName).toList();
                 }).toList();
 
-
         for (List<String> list : userPermissionsTemp) {
             userPermissions.addAll(list);
         }

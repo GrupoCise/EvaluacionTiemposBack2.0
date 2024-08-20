@@ -10,8 +10,8 @@ public final class PostEvaluationApiRequestMapper {
     public static PostEvaluationApiRequest mapFrom(Evaluation evaluation){
         return new PostEvaluationApiRequest(evaluation.getNumEmpleado(),
                 DateUtil.toStringYYYYMMDD(evaluation.getFecha()),
-                DateUtil.timeToString(evaluation.getHoraEntrada()),
-                DateUtil.timeToString(evaluation.getHoraSalida()),
+                evaluation.getHoraEntrada() != null ? DateUtil.timeToString(evaluation.getHoraEntrada()) : null,
+                evaluation.getHoraSalida() != null ? DateUtil.timeToString(evaluation.getHoraSalida()) : null,
                 evaluation.getResultadoGeneral(),
                 evaluation.getHorario(),
                 evaluation.getEnlace(),

@@ -21,8 +21,7 @@ public final class PermissionsFilter {
     }
 
     public static Boolean canRead(String[] userPermissions) {
-        return Arrays.stream(userPermissions)
-                .anyMatch(userPermission -> Objects.equals(userPermission, PermissionsEnum.READ.name()));
+        return userPermissions != null && userPermissions.length > 0;
     }
 
     public static Boolean canDelete(String[] userPermissions) {

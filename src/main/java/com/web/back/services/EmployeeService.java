@@ -44,14 +44,12 @@ public class EmployeeService {
         return zwshrEvaluacioClient.postRegistroTiempos(request).block();
     }
 
-    public CustomResponse<EvaluationsDataDto> getEmployeesByFilters(String beginDate, String endDate, String sociedad, String areaNomina, String userName) {
+    public CustomResponse<EvaluationsDataDto> getEmployeesByFilters(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
         var savedEmployeesOnEvaluation = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
         if (!savedEmployeesOnEvaluation.isEmpty()) {
-            var filters = Objects.requireNonNull(filtersService.getFilters(userName).block());
-            
-            var employeesNumbers = filters.getEmpleados().stream().map(Employee::getPernr).toList();
-            
+            var employeesNumbers = extraEmployeesData.stream().map(Employee::getPernr).toList();
+
             savedEmployeesOnEvaluation.removeIf(e -> !employeesNumbers.contains(e.getNumEmpleado()));
 
             return new CustomResponse<EvaluationsDataDto>().ok(
@@ -59,30 +57,37 @@ public class EmployeeService {
             );
         }
 
-        return getEmployeesByFiltersFromService(beginDate, endDate, sociedad, areaNomina, userName);
+        return getEmployeesByFiltersFromService(beginDate, endDate, sociedad, areaNomina, userName, extraEmployeesData);
     }
 
-    public CustomResponse<EvaluationsDataDto> getEmployeesByFiltersFromService(String beginDate, String endDate, String sociedad, String areaNomina, String userName) {
+    public CustomResponse<EvaluationsDataDto> getEmployeesByFiltersFromService(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
         List<EvaluationDto> evaluationDtos = new ArrayList<>();
 
         var evaluations = Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block());
-        var filters = Objects.requireNonNull(filtersService.getFilters(userName).block());
 
-        evaluations.forEach(employee -> processEmployee(evaluationDtos, employee, filters, sociedad, areaNomina));
+        var existentEmployees = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
-        var employeesNumbers = filters.getEmpleados().stream().map(Employee::getPernr).toList();
+        evaluations.forEach(employee -> processEmployee(evaluationDtos, existentEmployees, employee, extraEmployeesData, sociedad, areaNomina));
+
+        var employeesNumbers = extraEmployeesData.stream().map(Employee::getPernr).toList();
 
         evaluationDtos.removeIf(e -> !employeesNumbers.contains(e.getNumEmpleado()));
 
         return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos));
     }
 
-    private void processEmployee(List<EvaluationDto> evaluationDtos, EmployeeApiResponse employee,
-                                 EvaluacionApiResponse filters, String sociedad, String areaNomina) {
-        var employeeData = getEmployeeData(filters, employee);
+    private void processEmployee(List<EvaluationDto> evaluationDtos, List<Evaluation> existentEmployees, EmployeeApiResponse employee,
+                                 List<Employee> extraEmployeesData, String sociedad, String areaNomina) {
+        var employeeData = getEmployeeData(extraEmployeesData, employee);
 
-        var optionalEmployee = evaluationRepository.findByFechaAndHorarioAndTurnAndAreaNominaAndSociedadAndEmpleado(
-                DateUtil.toStringYYYYMMDD(employee.getFecha()), employee.getHorario(), employee.getTurno(), sociedad, areaNomina, employee.getEmpleado());
+        var optionalEmployee = existentEmployees.stream().filter(f ->
+                f.getNumEmpleado().equals(employee.getEmpleado()) &&
+                f.getFecha().equals(employee.getFecha()) &&
+                f.getHorario().equals(employee.getHorario()) &&
+                f.getTurn().equals(employee.getTurno()) &&
+                f.getSociedad().equals(sociedad) &&
+                f.getAreaNomina().equals(areaNomina)
+        ).findFirst();
 
         if (optionalEmployee.isPresent()) {
             updateExistingEmployee(evaluationDtos, employeeData, optionalEmployee.get());
@@ -108,8 +113,8 @@ public class EmployeeService {
         evaluationDtos.add(EvaluationDtoMapper.mapFrom(evaluation));
     }
 
-    private Employee getEmployeeData(EvaluacionApiResponse filters, EmployeeApiResponse employee) {
-        var employeeData = filters.getEmpleados().stream().filter(f -> f.getPernr().equals(employee.getEmpleado())).findFirst();
+    private Employee getEmployeeData(List<Employee> extraEmployeesData, EmployeeApiResponse employee) {
+        var employeeData = extraEmployeesData.stream().filter(f -> f.getPernr().equals(employee.getEmpleado())).findFirst();
         return employeeData.orElse(null);
     }
 }

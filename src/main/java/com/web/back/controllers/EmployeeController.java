@@ -2,8 +2,10 @@ package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.model.dto.EvaluationsDataDto;
+import com.web.back.model.dto.GetEmployeesRequestDto;
 import com.web.back.model.dto.RegistroTiemposDto;
 import com.web.back.model.responses.CustomResponse;
+import com.web.back.model.responses.evaluacion.Employee;
 import com.web.back.services.EmployeeService;
 import com.web.back.services.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,26 +26,26 @@ public class EmployeeController {
         this.jwtService = jwtService;
     }
 
-    @GetMapping(value = "getAll")
-    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+    @PostMapping(value = "getAll")
+    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, @RequestBody GetEmployeesRequestDto requestDto) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
 
-        return ResponseEntity.ok(employeeService.getEmployeesByFilters(beginDate, endDate, sociedad, areaNomina, username));
+        return ResponseEntity.ok(employeeService.getEmployeesByFilters(requestDto.beginDate(), requestDto.endDate(), requestDto.sociedad(), requestDto.areaNomina(), username, requestDto.extraEmployeesData()));
     }
 
-    @GetMapping(value = "getAll/sync")
-    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate, String sociedad, String areaNomina) {
+    @PostMapping(value = "getAll/sync")
+    public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, @RequestBody GetEmployeesRequestDto requestDto) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken)) && !PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
 
-        return ResponseEntity.ok(employeeService.getEmployeesByFiltersFromService(beginDate, endDate, sociedad, areaNomina, username));
+        return ResponseEntity.ok(employeeService.getEmployeesByFiltersFromService(requestDto.beginDate(), requestDto.endDate(), requestDto.sociedad(), requestDto.areaNomina(), username, requestDto.extraEmployeesData()));
     }
 
     @GetMapping(value = "getTimesheetInfo")
@@ -57,9 +59,8 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getRegistroTiempos(beginDate, endDate, username));
     }
 
-    @PostMapping(value="timesheets")
-    public ResponseEntity<CustomResponse<Void>> sendTimeSheetChanges(@RequestHeader("Authorization") String bearerToken, @RequestBody List<RegistroTiemposDto> registroTiemposDtos)
-    {
+    @PostMapping(value = "timesheets")
+    public ResponseEntity<CustomResponse<Void>> sendTimeSheetChanges(@RequestHeader("Authorization") String bearerToken, @RequestBody List<RegistroTiemposDto> registroTiemposDtos) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
             return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
         }
