@@ -2,7 +2,6 @@ package com.web.back.controllers;
 
 import com.web.back.filters.PermissionsFilter;
 import com.web.back.model.dto.ChangeLogDto;
-import com.web.back.model.entities.ChangeLog;
 import com.web.back.model.requests.ChangeLogRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.services.JwtService;

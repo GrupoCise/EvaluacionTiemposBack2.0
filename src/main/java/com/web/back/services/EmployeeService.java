@@ -6,28 +6,33 @@ import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.dto.EvaluationsDataDto;
 import com.web.back.model.dto.RegistroTiemposDto;
 import com.web.back.model.entities.*;
+import com.web.back.model.requests.GenerateXlsRequest;
 import com.web.back.model.requests.RegistroTiemposRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.evaluacion.Employee;
-import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
+import com.web.back.model.xls.ChangeLogXlsx;
+import com.web.back.model.xls.EmployeeIncidenceXlsx;
+import com.web.back.model.xls.interfaces.XlsxWriter;
 import com.web.back.repositories.EvaluationRepository;
-import com.web.back.utils.DateUtil;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 @Service
 public class EmployeeService {
     private final ZWSHREvaluacioClient zwshrEvaluacioClient;
     private final EvaluationRepository evaluationRepository;
-    private final FiltersService filtersService;
+    private final XlsxWriter xlsxWriter;
 
-    public EmployeeService(ZWSHREvaluacioClient zwshrEvaluacioClient, EvaluationRepository evaluationRepository, FiltersService filtersService) {
+    public EmployeeService(ZWSHREvaluacioClient zwshrEvaluacioClient, EvaluationRepository evaluationRepository, FiltersService filtersService, XlsxWriter xlsxWriter) {
         this.zwshrEvaluacioClient = zwshrEvaluacioClient;
         this.evaluationRepository = evaluationRepository;
-        this.filtersService = filtersService;
+        this.xlsxWriter = xlsxWriter;
     }
 
     public CustomResponse<List<RegistroTiemposDto>> getRegistroTiempos(String beginDate, String endDate, String userName) {
@@ -76,17 +81,43 @@ public class EmployeeService {
         return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos));
     }
 
+    public byte[] getLogsXlsData(GenerateXlsRequest request) {
+        var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina());
+
+        var employeesNumbers = request.extraEmployeesData().stream().map(Employee::getPernr).toList();
+
+        evaluations.removeIf(e -> !employeesNumbers.contains(e.getNumEmpleado()));
+
+        var evaluationXlsxes = IncidenceReportXlsxMapper.mapFrom(request.incidences(), evaluations);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try (bos; Workbook workbook = new XSSFWorkbook()) {
+            String[] columnTitles = EmployeeIncidenceXlsx.getColumnTitles();
+
+            evaluationXlsxes.forEach(e -> {
+                xlsxWriter.appendSheet(e.getEmployeeIncidenceList(), bos, columnTitles, workbook,
+                        String.format("%1$s - %2$s", e.getIdRetorno(), e.getIncidenceDescription()));
+            });
+
+            workbook.write(bos);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return bos.toByteArray();
+    }
+
     private void processEmployee(List<EvaluationDto> evaluationDtos, List<Evaluation> existentEmployees, EmployeeApiResponse employee,
                                  List<Employee> extraEmployeesData, String sociedad, String areaNomina) {
         var employeeData = getEmployeeData(extraEmployeesData, employee);
 
         var optionalEmployee = existentEmployees.stream().filter(f ->
                 f.getNumEmpleado().equals(employee.getEmpleado()) &&
-                f.getFecha().equals(employee.getFecha()) &&
-                f.getHorario().equals(employee.getHorario()) &&
-                f.getTurn().equals(employee.getTurno()) &&
-                f.getSociedad().equals(sociedad) &&
-                f.getAreaNomina().equals(areaNomina)
+                        f.getFecha().equals(employee.getFecha()) &&
+                        f.getHorario().equals(employee.getHorario()) &&
+                        f.getTurn().equals(employee.getTurno()) &&
+                        f.getSociedad().equals(sociedad) &&
+                        f.getAreaNomina().equals(areaNomina)
         ).findFirst();
 
         if (optionalEmployee.isPresent()) {

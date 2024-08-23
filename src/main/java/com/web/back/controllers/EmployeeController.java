@@ -4,11 +4,15 @@ import com.web.back.filters.PermissionsFilter;
 import com.web.back.model.dto.EvaluationsDataDto;
 import com.web.back.model.dto.GetEmployeesRequestDto;
 import com.web.back.model.dto.RegistroTiemposDto;
+import com.web.back.model.requests.GenerateXlsRequest;
 import com.web.back.model.responses.CustomResponse;
-import com.web.back.model.responses.evaluacion.Employee;
 import com.web.back.services.EmployeeService;
 import com.web.back.services.JwtService;
+import com.web.back.utils.DateUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +76,29 @@ public class EmployeeController {
         }
 
         return ResponseEntity.ok(new CustomResponse<Void>().internalError("Algo fallo al enviar los cambios. Contacta al administrador!"));
+    }
+
+    @PostMapping(value = "/incidencesReportToXls")
+    public ResponseEntity<byte[]> logToExcel(@RequestHeader("Authorization") String bearerToken, @RequestBody GenerateXlsRequest request) {
+        try {
+            final byte[] data = employeeService.getLogsXlsData(request);
+
+            HttpHeaders header = new HttpHeaders();
+            header.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"));
+            header.setContentLength(data.length);
+            header.setContentDispositionFormData("filename", getFileName(request));
+
+            return new ResponseEntity<>(data, header, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String getFileName(GenerateXlsRequest request) {
+        return String.format("%s-%s-%s-%s.xlsx",
+                DateUtil.clearSymbols(request.beginDate()),
+                DateUtil.clearSymbols(request.endDate()),
+                request.sociedad().replace(" ", ""),
+                request.areaNomina().replace(" ", ""));
     }
 }

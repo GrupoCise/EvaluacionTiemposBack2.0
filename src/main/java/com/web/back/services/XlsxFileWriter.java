@@ -1,7 +1,6 @@
 package com.web.back.services;
 
 import com.web.back.model.xls.XlsxField;
-
 import com.web.back.model.xls.interfaces.XlsxCompositeField;
 import com.web.back.model.xls.interfaces.XlsxSheet;
 import com.web.back.model.xls.interfaces.XlsxSingleField;
@@ -24,12 +23,10 @@ import java.util.List;
 @Service
 public class XlsxFileWriter implements XlsxWriter {
 
-
     private static final Logger logger = LoggerFactory.getLogger(XlsxFileWriter.class);
 
     @Override
     public <T> void write(List<T> data, ByteArrayOutputStream bos, String[] columnTitles, Workbook workbook) {
-
         if (data.isEmpty()) {
             logger.error("No data received to write Xls file..");
             return;
@@ -37,144 +34,12 @@ public class XlsxFileWriter implements XlsxWriter {
 
         long start = System.currentTimeMillis();
 
-//      setting up the basic styles for the workbook
-        Font boldFont = getBoldFont(workbook);
-        Font genericFont = getGenericFont(workbook);
-        CellStyle headerStyle = getLeftAlignedCellStyle(workbook, boldFont);
-        CellStyle currencyStyle = setCurrencyCellStyle(workbook);
-        CellStyle centerAlignedStyle = getCenterAlignedCellStyle(workbook);
-        CellStyle genericStyle = getLeftAlignedCellStyle(workbook, genericFont);
-
         try {
-// using POJO class metadata for the sheet name
             XlsxSheet annotation = data.get(0).getClass().getAnnotation(XlsxSheet.class);
             String sheetName = annotation.value();
-            Sheet sheet = workbook.createSheet(sheetName);
-
-//  get the metadata for each field of the POJO class into a list
-            List<XlsxField> xlsColumnFields = getFieldNamesForClass(data.get(0).getClass());
-
-            int tempRowNo = 0;
-            int recordBeginRowNo;
-            int recordEndRowNo = 0;
-
-//    set spreadsheet titles
-            Row mainRow = sheet.createRow(tempRowNo);
-            Cell columnTitleCell;
-
-            for (int i = 0; i < columnTitles.length; i++) {
-                columnTitleCell = mainRow.createCell(i);
-                columnTitleCell.setCellStyle(headerStyle);
-                columnTitleCell.setCellValue(columnTitles[i]);
-            }
-            recordEndRowNo++;
-
-//    get class of the passed dataset
-            Class<?> clazz = data.get(0).getClass();
-//    looping the past dataset
-            for (T record : data) {
-                tempRowNo = recordEndRowNo;
-                recordBeginRowNo = tempRowNo;
-                mainRow = sheet.createRow(tempRowNo++);
-                boolean isFirstValue;
-                boolean isFirstRow;
-                boolean isRowNoToDecrease = false;
-                Method xlsMethod;
-                Object xlsObjValue;
-                ArrayList<Object> objValueList;
-
-//      get max size of the record if its multiple row
-                int maxListSize = getMaxListSize(record, xlsColumnFields, clazz);
-
-
-//      looping through the fields of the current record
-                for (XlsxField xlsColumnField : xlsColumnFields) {
-//       writing a single field
-                    if (!xlsColumnField.isAnArray() && !xlsColumnField.isComposite()) {
-                        writeSingleFieldRow(mainRow, xlsColumnField, clazz, currencyStyle, centerAlignedStyle, genericStyle,
-                                record, workbook);
-
-//       overlooking the next field and adjusting the starting row
-                        if (isNextColumnAnArray(xlsColumnFields, xlsColumnField, clazz, record)) {
-                            isRowNoToDecrease = true;
-                            tempRowNo = recordBeginRowNo + 1;
-                        }
-
-//       writing an single array field
-                    } else if (xlsColumnField.isAnArray() && !xlsColumnField.isComposite()) {
-                        xlsMethod = getMethod(clazz, xlsColumnField);
-                        xlsObjValue = xlsMethod.invoke(record, (Object[]) null);
-                        objValueList = (ArrayList<Object>) xlsObjValue;
-                        isFirstValue = true;
-
-//       looping through the items of the single array
-                        for (Object objectValue : objValueList) {
-                            Row childRow;
-                            if (isFirstValue) {
-                                childRow = mainRow;
-                                writeArrayFieldRow(childRow, xlsColumnField, objectValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                                isFirstValue = false;
-                            } else if (isRowNoToDecrease) {
-                                childRow = getOrCreateNextRow(sheet, tempRowNo++);
-                                writeArrayFieldRow(childRow, xlsColumnField, objectValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                                isRowNoToDecrease = false;
-                            } else {
-                                childRow = getOrCreateNextRow(sheet, tempRowNo++);
-                                writeArrayFieldRow(childRow, xlsColumnField, objectValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                            }
-                        }
-
-                        //      overlooking the next field and adjusting the starting row
-                        if (isNextColumnAnArray(xlsColumnFields, xlsColumnField, clazz, record)) {
-                            isRowNoToDecrease = true;
-                            tempRowNo = recordBeginRowNo + 1;
-                        }
-
-//      writing a composite array field
-                    } else if (xlsColumnField.isAnArray() && xlsColumnField.isComposite()) {
-                        xlsMethod = getMethod(clazz, xlsColumnField);
-                        xlsObjValue = xlsMethod.invoke(record, (Object[]) null);
-                        objValueList = (ArrayList<Object>) xlsObjValue;
-                        isFirstRow = true;
-
-//       looping through the items of the composite array
-                        for (Object objectValue : objValueList) {
-                            Row childRow;
-                            List<XlsxField> xlsCompositeColumnFields = getFieldNamesForClass(objectValue.getClass());
-                            if (isFirstRow) {
-                                childRow = mainRow;
-                                for (XlsxField xlsCompositeColumnField : xlsCompositeColumnFields) {
-                                    writeCompositeFieldRow(objectValue, xlsCompositeColumnField, childRow, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                                }
-                                isFirstRow = false;
-                            } else if (isRowNoToDecrease) {
-                                childRow = getOrCreateNextRow(sheet, tempRowNo++);
-                                for (XlsxField xlsCompositeColumnField : xlsCompositeColumnFields) {
-                                    writeCompositeFieldRow(objectValue, xlsCompositeColumnField, childRow, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                                }
-                                isRowNoToDecrease = false;
-                            } else {
-                                childRow = getOrCreateNextRow(sheet, tempRowNo++);
-                                for (XlsxField xlsCompositeColumnField : xlsCompositeColumnFields) {
-                                    writeCompositeFieldRow(objectValue, xlsCompositeColumnField, childRow, currencyStyle, centerAlignedStyle, genericStyle, workbook);
-                                }
-                            }
-                        }
-
-//       overlooking the next field and adjusting the starting row
-                        if (isNextColumnAnArray(xlsColumnFields, xlsColumnField, clazz, record)) {
-                            isRowNoToDecrease = true;
-                            tempRowNo = recordBeginRowNo + 1;
-                        }
-                    }
-                }
-
-//      adjusting the ending row number for the current record
-                recordEndRowNo = maxListSize + recordBeginRowNo;
-            }
-
-// auto sizing the columns of the whole sheet
-            autoSizeColumns(sheet, xlsColumnFields.size());
+            Sheet sheet = createSheetWithTitles(sheetName, columnTitles, workbook);
+            writeDataToSheet(data, sheet, workbook);
+            autoSizeColumns(sheet, columnTitles.length);
             workbook.write(bos);
             logger.info("Xls file generated in [{}] seconds", processTime(start));
         } catch (Exception e) {
@@ -182,51 +47,134 @@ public class XlsxFileWriter implements XlsxWriter {
         }
     }
 
-    private void writeCompositeFieldRow(Object objectValue, XlsxField xlsCompositeColumnField, Row childRow, CellStyle currencyStyle, CellStyle centerAlignedStyle, CellStyle genericStyle, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    @Override
+    public <T> void appendSheet(List<T> data, ByteArrayOutputStream bos, String[] columnTitles, Workbook workbook, String sheetName) {
+        if (data.isEmpty()) {
+            return;
+        }
+        try {
+            Sheet sheet = createSheetWithTitles(sheetName, columnTitles, workbook);
+            writeDataToSheet(data, sheet, workbook);
+            autoSizeColumns(sheet, columnTitles.length);
+        } catch (Exception e) {
+            logger.info("Xls file write failed", e);
+        }
+    }
 
+    private <T> Sheet createSheetWithTitles(String sheetName, String[] columnTitles, Workbook workbook) {
+        Font boldFont = getBoldFont(workbook);
+        CellStyle headerStyle = getLeftAlignedCellStyle(workbook, boldFont);
+
+        Sheet sheet = workbook.createSheet(sheetName);
+
+        Row mainRow = sheet.createRow(0);
+        for (int i = 0; i < columnTitles.length; i++) {
+            Cell columnTitleCell = mainRow.createCell(i);
+            columnTitleCell.setCellStyle(headerStyle);
+            columnTitleCell.setCellValue(columnTitles[i]);
+        }
+        return sheet;
+    }
+
+    private <T> void writeDataToSheet(List<T> data, Sheet sheet, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        List<XlsxField> xlsColumnFields = getFieldNamesForClass(data.get(0).getClass());
+        int tempRowNo = 1;
+
+        for (T record : data) {
+            tempRowNo = writeRecordToSheet(record, xlsColumnFields, sheet, tempRowNo, workbook);
+        }
+    }
+
+    private <T> int writeRecordToSheet(T record, List<XlsxField> xlsColumnFields, Sheet sheet, int tempRowNo, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        int recordBeginRowNo = tempRowNo;
+        Row mainRow = sheet.createRow(tempRowNo++);
+        boolean isRowNoToDecrease = false;
+
+        for (XlsxField xlsColumnField : xlsColumnFields) {
+            if (!xlsColumnField.isAnArray() && !xlsColumnField.isComposite()) {
+                writeSingleFieldRow(mainRow, xlsColumnField, record, workbook);
+                if (isNextColumnAnArray(xlsColumnFields, xlsColumnField, record)) {
+                    isRowNoToDecrease = true;
+                    tempRowNo = recordBeginRowNo + 1;
+                }
+            } else if (xlsColumnField.isAnArray() && !xlsColumnField.isComposite()) {
+                tempRowNo = writeArrayFieldRows(record, xlsColumnField, sheet, tempRowNo, workbook, mainRow, isRowNoToDecrease);
+                isRowNoToDecrease = false;
+            } else if (xlsColumnField.isAnArray()) {
+                tempRowNo = writeCompositeFieldRows(record, xlsColumnField, sheet, tempRowNo, workbook, mainRow, isRowNoToDecrease);
+                isRowNoToDecrease = false;
+            }
+        }
+        return tempRowNo;
+    }
+
+    private <T> int writeArrayFieldRows(T record, XlsxField xlsColumnField, Sheet sheet, int tempRowNo, Workbook workbook, Row mainRow, boolean isRowNoToDecrease) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method xlsMethod = getMethod(record.getClass(), xlsColumnField);
+        List<Object> objValueList = (List<Object>) xlsMethod.invoke(record);
+        boolean isFirstValue = true;
+
+        for (Object objectValue : objValueList) {
+            Row childRow = isFirstValue ? mainRow : getOrCreateNextRow(sheet, tempRowNo++);
+            writeArrayFieldRow(childRow, xlsColumnField, objectValue, workbook);
+            isFirstValue = false;
+        }
+        return tempRowNo;
+    }
+
+    private <T> int writeCompositeFieldRows(T record, XlsxField xlsColumnField, Sheet sheet, int tempRowNo, Workbook workbook, Row mainRow, boolean isRowNoToDecrease) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method xlsMethod = getMethod(record.getClass(), xlsColumnField);
+        List<Object> objValueList = (List<Object>) xlsMethod.invoke(record);
+        boolean isFirstRow = true;
+
+        for (Object objectValue : objValueList) {
+            Row childRow = isFirstRow ? mainRow : getOrCreateNextRow(sheet, tempRowNo++);
+            List<XlsxField> xlsCompositeColumnFields = getFieldNamesForClass(objectValue.getClass());
+            for (XlsxField xlsCompositeColumnField : xlsCompositeColumnFields) {
+                writeCompositeFieldRow(objectValue, xlsCompositeColumnField, childRow, workbook);
+            }
+            isFirstRow = false;
+        }
+        return tempRowNo;
+    }
+
+    private void writeCompositeFieldRow(Object objectValue, XlsxField xlsCompositeColumnField, Row childRow, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method nestedCompositeXlsMethod = getMethod(objectValue.getClass(), xlsCompositeColumnField);
-        Object nestedCompositeValue = nestedCompositeXlsMethod.invoke(objectValue, (Object[]) null);
+        Object nestedCompositeValue = nestedCompositeXlsMethod.invoke(objectValue);
         Cell compositeNewCell = childRow.createCell(xlsCompositeColumnField.getCellIndex());
-        setCellValue(compositeNewCell, nestedCompositeValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
+        setCellValue(compositeNewCell, nestedCompositeValue, workbook);
     }
 
-    private void writeArrayFieldRow(Row childRow, XlsxField xlsColumnField, Object objectValue,
-                                    CellStyle currencyStyle, CellStyle centerAlignedStyle, CellStyle genericStyle, Workbook workbook) {
+    private void writeArrayFieldRow(Row childRow, XlsxField xlsColumnField, Object objectValue, Workbook workbook) {
         Cell newCell = childRow.createCell(xlsColumnField.getCellIndex());
-        setCellValue(newCell, objectValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
+        setCellValue(newCell, objectValue, workbook);
     }
 
-    private <T> void writeSingleFieldRow(Row mainRow, XlsxField xlsColumnField, Class<?> clazz, CellStyle currencyStyle, CellStyle centerAlignedStyle, CellStyle genericStyle, T record, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-
+    private <T> void writeSingleFieldRow(Row mainRow, XlsxField xlsColumnField, T record, Workbook workbook) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Cell newCell = mainRow.createCell(xlsColumnField.getCellIndex());
-        Method xlsMethod = getMethod(clazz, xlsColumnField);
-        Object xlsObjValue = xlsMethod.invoke(record, (Object[]) null);
-        setCellValue(newCell, xlsObjValue, currencyStyle, centerAlignedStyle, genericStyle, workbook);
+        Method xlsMethod = getMethod(record.getClass(), xlsColumnField);
+        Object xlsObjValue = xlsMethod.invoke(record);
+        setCellValue(newCell, xlsObjValue, workbook);
     }
 
-    private <T> boolean isNextColumnAnArray(List<XlsxField> xlsColumnFields, XlsxField xlsColumnField, Class<?> clazz, T record)
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        XlsxField nextXlsColumnField;
+    private <T> boolean isNextColumnAnArray(List<XlsxField> xlsColumnFields, XlsxField xlsColumnField, T record) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         int fieldsSize = xlsColumnFields.size();
-        Method nestedXlsMethod;
-        Object nestedObjValue;
-        ArrayList<Object> nestedObjValueList;
         if (xlsColumnFields.indexOf(xlsColumnField) < (fieldsSize - 1)) {
-            nextXlsColumnField = xlsColumnFields.get(xlsColumnFields.indexOf(xlsColumnField) + 1);
+            XlsxField nextXlsColumnField = xlsColumnFields.get(xlsColumnFields.indexOf(xlsColumnField) + 1);
             if (nextXlsColumnField.isAnArray()) {
-                nestedXlsMethod = getMethod(clazz, nextXlsColumnField);
-                nestedObjValue = nestedXlsMethod.invoke(record, (Object[]) null);
-                nestedObjValueList = (ArrayList<Object>) nestedObjValue;
+                Method nestedXlsMethod = getMethod(record.getClass(), nextXlsColumnField);
+                List<Object> nestedObjValueList = (List<Object>) nestedXlsMethod.invoke(record);
                 return nestedObjValueList.size() > 1;
             }
         }
         return xlsColumnFields.indexOf(xlsColumnField) == (fieldsSize - 1);
-
     }
 
-    private void setCellValue(Cell cell, Object objValue, CellStyle currencyStyle, CellStyle centerAlignedStyle,
-                              CellStyle genericStyle, Workbook workbook) {
+    private void setCellValue(Cell cell, Object objValue, Workbook workbook) {
+        CellStyle currencyStyle = setCurrencyCellStyle(workbook);
+        CellStyle centerAlignedStyle = getCenterAlignedCellStyle(workbook);
+        CellStyle genericStyle = getLeftAlignedCellStyle(workbook, getGenericFont(workbook));
         Hyperlink link = workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+
         if (objValue != null) {
             if (objValue instanceof String) {
                 String cellValue = (String) objValue;
@@ -243,16 +191,11 @@ public class XlsxFileWriter implements XlsxWriter {
             } else if (objValue instanceof Integer) {
                 cell.setCellValue((Integer) objValue);
             } else if (objValue instanceof Double) {
-                Double cellValue = (Double) objValue;
                 cell.setCellStyle(currencyStyle);
-                cell.setCellValue(cellValue);
+                cell.setCellValue((Double) objValue);
             } else if (objValue instanceof Boolean) {
                 cell.setCellStyle(centerAlignedStyle);
-                if (objValue.equals(true)) {
-                    cell.setCellValue(1);
-                } else {
-                    cell.setCellValue(0);
-                }
+                cell.setCellValue((Boolean) objValue ? 1 : 0);
             }
         }
     }
@@ -293,39 +236,26 @@ public class XlsxFileWriter implements XlsxWriter {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
-
-    private <T> int getMaxListSize(T record, List<XlsxField> xlsColumnFields, Class<? extends Object> aClass)
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-
+    private <T> int getMaxListSize(T record, List<XlsxField> xlsColumnFields, Class<?> aClass) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         List<Integer> listSizes = new ArrayList<>();
         for (XlsxField xlsColumnField : xlsColumnFields) {
             if (xlsColumnField.isAnArray()) {
                 Method method = getMethod(aClass, xlsColumnField);
-                Object value = method.invoke(record, (Object[]) null);
-                ArrayList<Object> objects = (ArrayList<Object>) value;
+                List<Object> objects = (List<Object>) method.invoke(record);
                 if (objects.size() > 1) {
                     listSizes.add(objects.size());
                 }
             }
         }
-
-        if (listSizes.isEmpty()) {
-            return 1;
-        } else {
-            return Collections.max(listSizes);
-        }
-
+        return listSizes.isEmpty() ? 1 : Collections.max(listSizes);
     }
 
     private Method getMethod(Class<?> clazz, XlsxField xlsColumnField) throws NoSuchMethodException {
-        Method method;
         try {
-            method = clazz.getMethod("get" + capitalize(xlsColumnField.getFieldName()));
+            return clazz.getMethod("get" + capitalize(xlsColumnField.getFieldName()));
         } catch (NoSuchMethodException nme) {
-            method = clazz.getMethod(xlsColumnField.getFieldName());
+            return clazz.getMethod(xlsColumnField.getFieldName());
         }
-
-        return method;
     }
 
     private long processTime(long start) {
@@ -334,18 +264,13 @@ public class XlsxFileWriter implements XlsxWriter {
 
     private void autoSizeColumns(Sheet sheet, int noOfColumns) {
         for (int i = 0; i < noOfColumns; i++) {
-            sheet.autoSizeColumn((short) i);
+            sheet.autoSizeColumn(i);
         }
     }
 
     private Row getOrCreateNextRow(Sheet sheet, int rowNo) {
-        Row row;
-        if (sheet.getRow(rowNo) != null) {
-            row = sheet.getRow(rowNo);
-        } else {
-            row = sheet.createRow(rowNo);
-        }
-        return row;
+        Row row = sheet.getRow(rowNo);
+        return row != null ? row : sheet.createRow(rowNo);
     }
 
     private CellStyle setCurrencyCellStyle(Workbook workbook) {

@@ -105,6 +105,7 @@ public class AuthService {
                 .userLevel(user.getUserLevel())
                 .roles(profiles)
                 .fullName(user.getName())
+                .username(user.getUsername())
                 .build();
     }
 }

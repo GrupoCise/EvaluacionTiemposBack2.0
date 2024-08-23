@@ -17,4 +17,5 @@ public class AuthResponse {
     Integer userLevel;
     List<String> roles;
     String fullName;
+    String username;
 }
