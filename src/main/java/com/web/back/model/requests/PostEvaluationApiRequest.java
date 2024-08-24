@@ -10,6 +10,7 @@ public record PostEvaluationApiRequest(
         String horaSalida,
         String estatusGen,
         String horario,
+        String turno,
         String enlace,
         String consecutivo1,
         String consecutivo2

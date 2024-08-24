@@ -14,6 +14,7 @@ public final class PostEvaluationApiRequestMapper {
                 evaluation.getHoraSalida() != null ? DateUtil.timeToString(evaluation.getHoraSalida()) : null,
                 evaluation.getResultadoGeneral(),
                 evaluation.getHorario(),
+                evaluation.getTurn() != null ? evaluation.getTurn().toString() : null,
                 evaluation.getEnlace(),
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2());
