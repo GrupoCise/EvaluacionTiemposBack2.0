@@ -49,7 +49,7 @@ public class EmployeeController {
 
         String username = jwtService.getUsernameFromToken(bearerToken);
 
-        return ResponseEntity.ok(employeeService.getEmployeesByFiltersFromService(requestDto.beginDate(), requestDto.endDate(), requestDto.sociedad(), requestDto.areaNomina(), username, requestDto.extraEmployeesData()));
+        return ResponseEntity.ok(employeeService.getEmployeesCleanSync(requestDto.beginDate(), requestDto.endDate(), requestDto.sociedad(), requestDto.areaNomina(), username, requestDto.extraEmployeesData()));
     }
 
     @GetMapping(value = "getTimesheetInfo")

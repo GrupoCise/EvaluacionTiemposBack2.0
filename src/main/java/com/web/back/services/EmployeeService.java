@@ -50,22 +50,42 @@ public class EmployeeService {
     }
 
     public CustomResponse<EvaluationsDataDto> getEmployeesByFilters(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
+        List<EvaluationDto> evaluationDtos = new ArrayList<>();
         var savedEmployeesOnEvaluation = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
+        var employeesNumbers = extraEmployeesData.stream().map(Employee::getPernr).toList();
 
         if (!savedEmployeesOnEvaluation.isEmpty()) {
-            var employeesNumbers = extraEmployeesData.stream().map(Employee::getPernr).toList();
 
-            savedEmployeesOnEvaluation.removeIf(e -> !employeesNumbers.contains(e.getNumEmpleado()));
+            var employeesForAuthUser = savedEmployeesOnEvaluation.stream().filter(e -> employeesNumbers.contains(e.getNumEmpleado())).toList();
+            var employeesNumbersForAuthUser = employeesForAuthUser.stream().map(Evaluation::getNumEmpleado).toList();
+            var missingEmployees = employeesNumbers.stream().filter(eNum -> !employeesNumbersForAuthUser.contains(eNum)).toList();
 
-            return new CustomResponse<EvaluationsDataDto>().ok(
-                    new EvaluationsDataDto(savedEmployeesOnEvaluation.stream().map(EvaluationDtoMapper::mapFrom).toList())
-            );
+            if(!missingEmployees.isEmpty()) {
+                var evaluations = Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block());
+                evaluations.forEach(employee -> {
+                    if(missingEmployees.contains(employee.getEmpleado())) {
+                        processEmployee(evaluationDtos, savedEmployeesOnEvaluation, employee, extraEmployeesData, sociedad, areaNomina);
+                    }
+                });
+            }
+
+            evaluationDtos.addAll(employeesForAuthUser.stream().map(EvaluationDtoMapper::mapFrom).toList());
         }
 
-        return getEmployeesByFiltersFromService(beginDate, endDate, sociedad, areaNomina, userName, extraEmployeesData);
+        if(evaluationDtos.isEmpty()){
+            var evaluations = Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block());
+
+            evaluations.forEach(employee -> {
+                if(employeesNumbers.contains(employee.getEmpleado())) {
+                    processEmployee(evaluationDtos, savedEmployeesOnEvaluation, employee, extraEmployeesData, sociedad, areaNomina);
+                }
+            });
+        }
+
+        return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos));
     }
 
-    public CustomResponse<EvaluationsDataDto> getEmployeesByFiltersFromService(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
+    public CustomResponse<EvaluationsDataDto> getEmployeesCleanSync(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
         List<EvaluationDto> evaluationDtos = new ArrayList<>();
 
         var evaluations = Objects.requireNonNull(zwshrEvaluacioClient.getEmployees(userName, beginDate, endDate, sociedad, areaNomina).block());
@@ -114,8 +134,8 @@ public class EmployeeService {
         var optionalEmployee = existentEmployees.stream().filter(f ->
                 f.getNumEmpleado().equals(employee.getEmpleado()) &&
                         f.getFecha().equals(employee.getFecha()) &&
-                        f.getHorario().equals(employee.getHorario()) &&
-                        f.getTurn().equals(employee.getTurno()) &&
+                        Objects.equals(f.getHorario(), employee.getHorario()) &&
+                        Objects.equals(f.getTurn(), employee.getTurno()) &&
                         f.getSociedad().equals(sociedad) &&
                         f.getAreaNomina().equals(areaNomina)
         ).findFirst();
