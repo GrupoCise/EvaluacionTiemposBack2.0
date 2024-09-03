@@ -5,5 +5,10 @@ public enum PermissionsEnum {
     UPDATE,
     READ,
     DELETE,
-    SUPER
+    SUPER,
+    UPDATE_TIMESHEET,
+    UPDATE_RG,
+    UPDATE_HE,
+    APPROVE,
+    SEND_TO_SAP,
 }

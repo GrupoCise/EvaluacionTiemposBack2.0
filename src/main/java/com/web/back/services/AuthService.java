@@ -90,6 +90,11 @@ public class AuthService {
 
         if(Objects.equals(user.getUsername(), "00000000")){
             userPermissions.add(PermissionsEnum.SUPER.name());
+            userPermissions.add(PermissionsEnum.UPDATE_TIMESHEET.name());
+            userPermissions.add(PermissionsEnum.UPDATE_RG.name());
+            userPermissions.add(PermissionsEnum.UPDATE_HE.name());
+            userPermissions.add(PermissionsEnum.APPROVE.name());
+            userPermissions.add(PermissionsEnum.SEND_TO_SAP.name());
         }
 
         String token = jwtService.getToken(user, String.join("|", userPermissions));
