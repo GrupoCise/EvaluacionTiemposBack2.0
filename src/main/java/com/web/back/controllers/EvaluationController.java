@@ -25,10 +25,6 @@ public class EvaluationController {
     @PutMapping(value="evaluations")
     public ResponseEntity<CustomResponse<List<EvaluationDto>>> updateRegistros(@RequestHeader("Authorization") String bearerToken, @RequestBody EvaluationRequest request)
     {
-        if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
-        }
-
         request.setUserName(jwtService.getUsernameFromToken(bearerToken));
 
         return ResponseEntity.ok(evaluationService.updateEvaluations(request));

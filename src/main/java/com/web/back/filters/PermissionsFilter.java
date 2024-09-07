@@ -33,4 +33,9 @@ public final class PermissionsFilter {
         return Arrays.stream(userPermissions)
                 .anyMatch(userPermission -> Objects.equals(userPermission, PermissionsEnum.SUPER.name()));
     }
+
+    public static Boolean hasPermission(String[] userPermissions, PermissionsEnum permission) {
+        return Arrays.stream(userPermissions)
+                .anyMatch(userPermission -> Objects.equals(userPermission, permission.name()) || isSuperUser(userPermissions));
+    }
 }

@@ -11,4 +11,5 @@ public enum PermissionsEnum {
     UPDATE_HE,
     APPROVE,
     SEND_TO_SAP,
+    REGISTER_TIMESHEETS
 }

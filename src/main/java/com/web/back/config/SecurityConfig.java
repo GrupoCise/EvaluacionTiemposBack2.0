@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 .requestMatchers("/filters/**").permitAll()
                                 .requestMatchers("/permission/**").permitAll()
                                 .requestMatchers("/perfil/**").permitAll()
+                                .requestMatchers("/timesheet/**").permitAll()
                                 .anyRequest().permitAll()
                 )
                 .sessionManagement(sessionManager ->
