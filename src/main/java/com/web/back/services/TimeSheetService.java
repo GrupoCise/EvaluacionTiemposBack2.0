@@ -17,6 +17,8 @@ public class TimeSheetService {
     }
 
     public List<RegistroHorariosResponse> registerTimeSheets(List<RegistroHorariosRequest> registroHorariosRequests) {
-        return zwshrEvaluacioClient.postRegistroHorarios(registroHorariosRequests).block();
+        var t =  zwshrEvaluacioClient.postRegistroHorarios(registroHorariosRequests).block();
+
+        return t;
     }
 }
