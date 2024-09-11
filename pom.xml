@@ -15,7 +15,7 @@
 	<name>back</name>
 	<description>Evaluacion Tiempos Back 2.0</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>20</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
