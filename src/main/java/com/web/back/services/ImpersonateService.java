@@ -61,12 +61,14 @@ public class ImpersonateService {
         }
     }
 
+    @Transactional
     public CustomResponse<List<ImpersonateResponse>> getImpersonations() {
         return new CustomResponse<List<ImpersonateResponse>>().ok(
                 impersonationRepository.findAll().stream().map(ImpersonateResponseMapper::mapFrom).toList()
         );
     }
 
+    @Transactional
     public CustomResponse<List<ImpersonateResponse>> getByUser(String username) {
         Optional<User> user = userRepository.findByUsername(username);
         return user.map(value -> new CustomResponse<List<ImpersonateResponse>>().ok(
@@ -84,10 +86,6 @@ public class ImpersonateService {
         if (actor.get().getUsername().equals(targetUser.get().getUsername())) {
             return "No se puede actuar como el mismo usuario";
         }
-
-//        if (actor.get().getProfiles().stream().anyMatch(profile -> targetUser.get().getProfiles().contains(profile))) {
-//            return "No se puede actuar como alguien con el mismo perfil";
-//        }
 
         return null;
     }

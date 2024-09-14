@@ -16,6 +16,7 @@ public final class PostEvaluationApiRequestMapper {
                 evaluation.getHorario(),
                 evaluation.getTurn() != null ? evaluation.getTurn().toString() : null,
                 evaluation.getEnlace(),
+                evaluation.getReferencia(),
                 evaluation.getConsecutivo1(),
                 evaluation.getConsecutivo2());
     }

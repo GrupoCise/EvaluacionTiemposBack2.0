@@ -11,7 +11,6 @@ import com.web.back.model.requests.RegistroTiemposRequest;
 import com.web.back.model.responses.CustomResponse;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.evaluacion.Employee;
-import com.web.back.model.xls.ChangeLogXlsx;
 import com.web.back.model.xls.EmployeeIncidenceXlsx;
 import com.web.back.model.xls.interfaces.XlsxWriter;
 import com.web.back.repositories.EvaluationRepository;
@@ -19,6 +18,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -49,6 +49,7 @@ public class EmployeeService {
         return zwshrEvaluacioClient.postRegistroTiempos(request).block();
     }
 
+    @Transactional
     public CustomResponse<EvaluationsDataDto> getEmployeesByFilters(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
         List<EvaluationDto> evaluationDtos = new ArrayList<>();
         var savedEmployeesOnEvaluation = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
@@ -85,6 +86,7 @@ public class EmployeeService {
         return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos));
     }
 
+    @Transactional
     public CustomResponse<EvaluationsDataDto> getEmployeesCleanSync(String beginDate, String endDate, String sociedad, String areaNomina, String userName, List<Employee> extraEmployeesData) {
         List<EvaluationDto> evaluationDtos = new ArrayList<>();
 
@@ -101,6 +103,7 @@ public class EmployeeService {
         return new CustomResponse<EvaluationsDataDto>().ok(new EvaluationsDataDto(evaluationDtos));
     }
 
+    @Transactional
     public byte[] getLogsXlsData(GenerateXlsRequest request) {
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina());
 

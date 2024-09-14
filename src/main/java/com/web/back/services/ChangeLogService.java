@@ -13,6 +13,7 @@ import com.web.back.repositories.EvaluationRepository;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -29,6 +30,7 @@ public class ChangeLogService {
         this.xlsxWriter = xlsxWriter;
     }
 
+    @Transactional
     public CustomResponse<List<ChangeLogDto>> getLogs(String beginDate, String endDate, String sociedad, String areaNomina) {
 
         var logs = changeLogRepository.findByFechaAndSociedadAndArea(beginDate, endDate, sociedad, areaNomina);
@@ -42,6 +44,7 @@ public class ChangeLogService {
         return new CustomResponse<List<ChangeLogDto>>().ok(enrichedLogs);
     }
 
+    @Transactional
     public byte[] getLogsXlsData(ChangeLogRequest request) {
         var logs = changeLogRepository.findByFechaAndSociedadAndArea(
                 request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina());
@@ -59,6 +62,7 @@ public class ChangeLogService {
         return bos.toByteArray();
     }
 
+    @Transactional
     public void LogUpdateEvaluationsChanges(List<ChangeLog> changesSummary){
         changeLogRepository.saveAll(changesSummary);
     }

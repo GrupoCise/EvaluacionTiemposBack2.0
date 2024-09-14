@@ -5,7 +5,6 @@ import com.web.back.model.entities.User;
 import com.web.back.model.requests.RegisterUserRequest;
 import com.web.back.model.requests.UserUpdateRequest;
 import com.web.back.repositories.ProfileRepository;
-import com.web.back.repositories.UserProfileRepository;
 import com.web.back.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,13 +18,11 @@ import java.util.*;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserProfileRepository userProfileRepository;
     private final ProfileRepository profileRepository;
     public final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
         this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -75,6 +72,7 @@ public class UserService {
         return Mono.just(user);
     }
 
+    @Transactional
     public Mono<List<User>> getAll() {
         return Mono.just(userRepository.findAll());
     }
@@ -111,6 +109,7 @@ public class UserService {
         return Mono.just("Password Changed");
     }
 
+    @Transactional
     public Optional<User> getByUserName(String userName) {
         return userRepository.findByUsername(userName);
     }

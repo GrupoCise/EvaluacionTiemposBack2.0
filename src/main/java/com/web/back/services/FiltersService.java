@@ -19,9 +19,8 @@ public class FiltersService {
         String currentDate = new Date(System.currentTimeMillis()).toString();
 
         try{
-            var r = zwshrEvaluacioClient.getEvaluacion(userName, currentDate, currentDate);
 
-            return r;
+            return zwshrEvaluacioClient.getEvaluacion(userName, currentDate, currentDate);
         } catch (Exception e) {
             e.printStackTrace();
 

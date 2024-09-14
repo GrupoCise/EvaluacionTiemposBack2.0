@@ -12,6 +12,7 @@ public record PostEvaluationApiRequest(
         String horario,
         String turno,
         String enlace,
+        String referencia,
         String consecutivo1,
         String consecutivo2
 ) {

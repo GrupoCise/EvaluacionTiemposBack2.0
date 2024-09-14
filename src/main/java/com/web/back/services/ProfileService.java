@@ -85,6 +85,7 @@ public class ProfileService {
         profileRepository.deleteById(id);
     }
 
+    @Transactional
     public List<Profile> getALl() {
         return profileRepository.findAll();
     }

@@ -45,4 +45,8 @@ public class ApplicationConfig {
                 .orElseThrow(() -> new UsernameNotFoundException("User not fournd"));
     }
 
+    @Bean
+    public SchedulerCleanup schedulerCleanup() {
+        return new SchedulerCleanup();
+    }
 }
