@@ -26,7 +26,7 @@ public class ProfileController {
     @GetMapping(value = "getAll")
     public ResponseEntity<CustomResponse<List<ProfileDto>>> getAll(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<ProfileDto>>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<List<ProfileDto>>().ok(profileService.getALl().stream()
@@ -36,7 +36,7 @@ public class ProfileController {
     @PostMapping(value = "register")
     public ResponseEntity<CustomResponse<ProfileDto>> register(@RequestHeader("Authorization") String bearerToken, @RequestBody ProfileRequest request) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<ProfileDto>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<ProfileDto>().ok(
@@ -47,7 +47,7 @@ public class ProfileController {
     @PutMapping(value = "update/{id}")
     public ResponseEntity<CustomResponse<ProfileDto>> update(@RequestHeader("Authorization") String bearerToken, @RequestBody ProfileRequest request, @PathVariable Integer id) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<ProfileDto>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<ProfileDto>().ok(
@@ -58,7 +58,7 @@ public class ProfileController {
     @DeleteMapping(value = "delete/{id}")
     public ResponseEntity<CustomResponse<Void>> delete(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id) {
         if (!PermissionsFilter.canDelete(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<Void>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         profileService.delete(id);

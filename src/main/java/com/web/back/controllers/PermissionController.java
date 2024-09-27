@@ -28,7 +28,7 @@ public class PermissionController {
     @GetMapping(value = "getAll")
     public ResponseEntity<CustomResponse<List<PermissionDto>>> getAll(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<PermissionDto>>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<List<PermissionDto>>().ok(

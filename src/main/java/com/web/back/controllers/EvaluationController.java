@@ -34,7 +34,7 @@ public class EvaluationController {
     public ResponseEntity<CustomResponse<Void>> sendApprovedEvaluationsToSap(@RequestHeader("Authorization") String bearerToken, @RequestBody EvaluationRequest request)
     {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         var response = evaluationService.sendApprovedEvaluationsToSap(request.getBeginDate(), request.getEndDate(), request.getSociedad(), request.getAreaNomina());
@@ -49,7 +49,7 @@ public class EvaluationController {
     @GetMapping(value = "evaluations")
     public ResponseEntity<CustomResponse<List<EvaluationDto>>> getAllEmployeeEvaluations(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().ok(evaluationService.getAllEvaluations()));
@@ -58,7 +58,7 @@ public class EvaluationController {
     @DeleteMapping(value = "evaluations")
     public ResponseEntity<CustomResponse<Void>> deleteEvaluations(@RequestHeader("Authorization") String bearerToken, @RequestBody List<Integer> evaluationsToRemove) {
         if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<Void>().ok(evaluationService.deleteEvaluations(evaluationsToRemove)));

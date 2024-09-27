@@ -33,7 +33,7 @@ public class EmployeeController {
     @PostMapping(value = "getAll")
     public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluations(@RequestHeader("Authorization") String bearerToken, @RequestBody GetEmployeesRequestDto requestDto) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
@@ -44,7 +44,7 @@ public class EmployeeController {
     @PostMapping(value = "getAll/sync")
     public ResponseEntity<CustomResponse<EvaluationsDataDto>> getEmployeesEvaluationsAndSync(@RequestHeader("Authorization") String bearerToken, @RequestBody GetEmployeesRequestDto requestDto) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken)) && !PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<EvaluationsDataDto>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
@@ -55,7 +55,7 @@ public class EmployeeController {
     @GetMapping(value = "getTimesheetInfo")
     public ResponseEntity<CustomResponse<List<RegistroTiemposDto>>> getTimesheetInfo(@RequestHeader("Authorization") String bearerToken, String beginDate, String endDate) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken)) && !PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<RegistroTiemposDto>>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
@@ -66,7 +66,7 @@ public class EmployeeController {
     @PostMapping(value = "timesheets")
     public ResponseEntity<CustomResponse<Void>> sendTimeSheetChanges(@RequestHeader("Authorization") String bearerToken, @RequestBody List<RegistroTiemposDto> registroTiemposDtos) {
         if (!PermissionsFilter.canEdit(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<Void>().forbidden("No cuentas con los permisos para utilizar esta función"));
+            return ResponseEntity.status(401).build();
         }
 
         var response = employeeService.sendTimeSheetChanges(registroTiemposDtos);

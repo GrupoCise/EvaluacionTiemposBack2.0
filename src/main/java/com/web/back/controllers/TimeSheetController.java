@@ -26,7 +26,7 @@ public class TimeSheetController {
     @PostMapping(value = "register/list")
     public ResponseEntity<CustomResponse<List<RegistroHorariosResponse>>> register(@RequestHeader("Authorization") String bearerToken, @RequestBody List<RegistroHorariosRequest> registroHorariosRequests) {
         if (!PermissionsFilter.hasPermission(jwtService.getPermissionsFromToken(bearerToken), PermissionsEnum.REGISTER_TIMESHEETS)) {
-            return ResponseEntity.ok(new CustomResponse<List<RegistroHorariosResponse>>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(new CustomResponse<List<RegistroHorariosResponse>>().ok(

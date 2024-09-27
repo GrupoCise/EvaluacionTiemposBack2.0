@@ -27,7 +27,7 @@ public class ImpersonateController {
     @PostMapping("/insert")
     public ResponseEntity<CustomResponse<ImpersonateResponse>> insert(@RequestHeader("Authorization") String bearerToken, @RequestBody ImpersonateRequest request) {
         if (!PermissionsFilter.canCreate(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<ImpersonateResponse>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(impersonateService.saveImpersonation(request));
@@ -36,7 +36,7 @@ public class ImpersonateController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<CustomResponse<Boolean>> delete(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id) {
         if (!PermissionsFilter.canDelete(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<Boolean>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(impersonateService.deleteImpersonation(id));
@@ -45,7 +45,7 @@ public class ImpersonateController {
     @GetMapping("/getAll")
     public ResponseEntity<CustomResponse<List<ImpersonateResponse>>> getAll(@RequestHeader("Authorization") String bearerToken) {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return ResponseEntity.ok(new CustomResponse<List<ImpersonateResponse>>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         return ResponseEntity.ok(impersonateService.getImpersonations());

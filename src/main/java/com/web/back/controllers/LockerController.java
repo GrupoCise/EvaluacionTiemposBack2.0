@@ -33,7 +33,7 @@ public class LockerController {
 
             return ResponseEntity.ok(true);
         } catch (Exception e) {
-            return ResponseEntity.ok(false);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -45,7 +45,7 @@ public class LockerController {
 
             return ResponseEntity.ok(true);
         } catch (Exception e) {
-            return ResponseEntity.ok(false);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -57,7 +57,7 @@ public class LockerController {
 
             return ResponseEntity.ok(Objects.equals(lock, LOCK_VALUE));
         } catch (Exception e) {
-            return ResponseEntity.ok(false);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

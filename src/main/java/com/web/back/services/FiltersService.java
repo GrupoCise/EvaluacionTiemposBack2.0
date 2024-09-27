@@ -5,7 +5,7 @@ import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Service
 public class FiltersService {
@@ -16,14 +16,12 @@ public class FiltersService {
     }
 
     public Mono<EvaluacionApiResponse> getFilters(String userName) {
-        String currentDate = new Date(System.currentTimeMillis()).toString();
+        String currentDate = LocalDate.now().toString();
 
         try{
 
             return zwshrEvaluacioClient.getEvaluacion(userName, currentDate, currentDate);
         } catch (Exception e) {
-            e.printStackTrace();
-
             return null;
         }
     }

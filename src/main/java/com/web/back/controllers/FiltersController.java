@@ -6,8 +6,8 @@ import com.web.back.model.responses.evaluacion.EvaluacionApiResponse;
 import com.web.back.services.FiltersService;
 import com.web.back.services.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/filters/")
@@ -22,15 +22,16 @@ public class FiltersController {
     }
 
     @GetMapping(value="getFilerData")
-    public Mono<CustomResponse<EvaluacionApiResponse>> getFilterDataS(@RequestHeader("Authorization") String bearerToken)
+    public ResponseEntity<CustomResponse<EvaluacionApiResponse>> getFilterDataS(@RequestHeader("Authorization") String bearerToken)
     {
         if (!PermissionsFilter.canRead(jwtService.getPermissionsFromToken(bearerToken))) {
-            return Mono.just(new CustomResponse<EvaluacionApiResponse>().forbidden());
+            return ResponseEntity.status(401).build();
         }
 
         String username = jwtService.getUsernameFromToken(bearerToken);
 
-        return filtersService.getFilters(username)
-                .map(filters -> new CustomResponse<EvaluacionApiResponse>().ok(filters));
+        var filters = filtersService.getFilters(username).block();
+
+        return ResponseEntity.ok(new CustomResponse<EvaluacionApiResponse>().ok(filters));
     }
 }
