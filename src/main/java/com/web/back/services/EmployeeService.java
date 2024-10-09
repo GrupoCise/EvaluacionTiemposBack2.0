@@ -137,10 +137,7 @@ public class EmployeeService {
         var optionalEmployee = existentEmployees.stream().filter(f ->
                 f.getNumEmpleado().equals(employee.getEmpleado()) &&
                         f.getFecha().equals(employee.getFecha()) &&
-                        Objects.equals(f.getHorario(), employee.getHorario()) &&
-                        Objects.equals(f.getTurn(), employee.getTurno()) &&
-                        f.getSociedad().equals(sociedad) &&
-                        f.getAreaNomina().equals(areaNomina)
+                        Objects.equals(f.getTurn(), employee.getTurno())
         ).findFirst();
 
         if (optionalEmployee.isPresent()) {

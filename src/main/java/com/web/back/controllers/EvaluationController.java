@@ -8,6 +8,7 @@ import com.web.back.services.EvaluationService;
 import com.web.back.services.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -37,13 +38,20 @@ public class EvaluationController {
             return ResponseEntity.status(401).build();
         }
 
-        var response = evaluationService.sendApprovedEvaluationsToSap(request.getBeginDate(), request.getEndDate(), request.getSociedad(), request.getAreaNomina());
+        try {
+            evaluationService.sendApprovedEvaluationsToSap(request.getBeginDate(), request.getEndDate(), request.getSociedad(), request.getAreaNomina());
 
-        if (response != null && response.getStatusCode().is2xxSuccessful()) {
             return ResponseEntity.ok(new CustomResponse<Void>().ok(null, "Evaluaciones enviadas exitosamente!"));
-        }
+        }catch (Exception e) {
+            String errorMessage = "";
 
-        return ResponseEntity.ok(new CustomResponse<Void>().internalError("Algo fallo al enviar las evaluaciones. Contacta al administrador!"));
+            if (e instanceof HttpClientErrorException) {
+                errorMessage = "Error al enviar las evaluaciones a SAP. Contacta al administrador!";
+            } else {
+                errorMessage = e.getMessage();
+            }
+            return ResponseEntity.ok(new CustomResponse<Void>().internalError(errorMessage));
+        }
     }
 
     @GetMapping(value = "evaluations")

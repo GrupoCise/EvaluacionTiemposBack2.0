@@ -30,4 +30,10 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
     )
     List<Evaluation> findByFechaAndAreaNominaAndSociedad(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("sociedad") String sociedad, @Param("areaNomina") String areaNomina);
 
+    @Query(
+            value = "SELECT * FROM evaluation WHERE CAST(fecha AS DATE) BETWEEN :beginDate AND :endDate AND (:turn IS NULL OR turn = :turn) order by fecha",
+            nativeQuery = true
+    )
+    List<Evaluation> findByFechaAndTurn(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("turn") Integer turn);
+
 }

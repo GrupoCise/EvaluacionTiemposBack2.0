@@ -20,6 +20,7 @@ import com.web.back.utils.DateUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public ResponseEntity<Void> sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina) {
+    public void sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina) {
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
 
         evaluations = evaluations.stream()
@@ -81,7 +82,9 @@ public class EvaluationService {
             evaluationRepository.saveAll(evaluations);
         }
 
-        return response;
+        if (response != null && !response.getStatusCode().is2xxSuccessful()) {
+            throw new HttpClientErrorException(response.getStatusCode());
+        }
     }
 
     @Transactional(rollbackFor = {Exception.class})
