@@ -20,7 +20,7 @@ public class Profile {
     @Column(name = "description", nullable = false, length = 100)
     private String description;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "profile_permission",
             joinColumns = @JoinColumn(name = "profile_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id"))

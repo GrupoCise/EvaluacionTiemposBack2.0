@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -33,6 +34,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+    @Transactional
     public CustomResponse<AuthResponse> login(LoginRequest request) {
         User user;
 
@@ -49,6 +51,7 @@ public class AuthService {
         return new CustomResponse<AuthResponse>().ok(buildAuthResponse(user));
     }
 
+    @Transactional
     public CustomResponse<AuthResponse> getTokenForUser(String loggedUserName, String userName){
         User user = userService.getByUserName(userName).orElseThrow();
         User loggedUser = userService.getByUserName(loggedUserName).orElseThrow();
@@ -66,6 +69,7 @@ public class AuthService {
     }
 
 
+    @Transactional
     public Mono<CustomResponse<String>> changePassword(LoginRequest request) {
         try {
             return userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()))

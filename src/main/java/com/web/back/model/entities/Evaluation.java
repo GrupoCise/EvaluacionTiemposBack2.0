@@ -52,7 +52,7 @@ public class Evaluation {
     @Column(name = "resultado_general", length = 250)
     private String resultadoGeneral;
 
-    @Column(name = "status_registro", length = 2)
+    @Column(name = "status_registro", length = 20)
     private String statusRegistro;
 
     @Column(name = "num_empleado", length = 20)

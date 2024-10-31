@@ -36,13 +36,13 @@ public class User implements UserDetails {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Impersonation> impersonations = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "targetUser")
+    @OneToMany(mappedBy = "targetUser", fetch = FetchType.EAGER)
     private Set<Impersonation> impersonations_target = new LinkedHashSet<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_profile",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "profile_id"))
