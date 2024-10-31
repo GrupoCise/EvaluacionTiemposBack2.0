@@ -31,9 +31,9 @@ public class ChangeLogService {
     }
 
     @Transactional
-    public CustomResponse<List<ChangeLogDto>> getLogs(String beginDate, String endDate, String sociedad, String areaNomina) {
+    public CustomResponse<List<ChangeLogDto>> getLogs(String beginDate, String endDate, String sociedad, String areaNomina, String editorUserName) {
 
-        var logs = changeLogRepository.findByFechaAndSociedadAndArea(beginDate, endDate, sociedad, areaNomina);
+        var logs = changeLogRepository.findByFechaAndSociedadAndAreaAndEditor(beginDate, endDate, sociedad, areaNomina, editorUserName);
 
         var evaluationList = logs.stream().map(ChangeLog::getEvaluationId).distinct().toList();
 
@@ -45,9 +45,9 @@ public class ChangeLogService {
     }
 
     @Transactional
-    public byte[] getLogsXlsData(ChangeLogRequest request) {
-        var logs = changeLogRepository.findByFechaAndSociedadAndArea(
-                request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina());
+    public byte[] getLogsXlsData(ChangeLogRequest request, String editorUserName) {
+        var logs = changeLogRepository.findByFechaAndSociedadAndAreaAndEditor(
+                request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina(), editorUserName);
 
         var changeLogXlsxes = logs.stream().map(ChangeLogXlsxMapper::mapFrom).toList();
 

@@ -35,7 +35,9 @@ public class ChangeLogController {
             return Mono.just(new CustomResponse<List<ChangeLogDto>>().forbidden());
         }
 
-        return Mono.just(changeLogService.getLogs(request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina()));
+        String username = jwtService.getUsernameFromToken(bearerToken);
+
+        return Mono.just(changeLogService.getLogs(request.beginDate(), request.endDate(), request.sociedad(), request.areaNomina(), username));
     }
 
     @PostMapping(value = "/logToExcel")
@@ -44,8 +46,10 @@ public class ChangeLogController {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 
+        String username = jwtService.getUsernameFromToken(bearerToken);
+
         try {
-            final byte[] data = changeLogService.getLogsXlsData(request);
+            final byte[] data = changeLogService.getLogsXlsData(request, username);
 
             HttpHeaders header = new HttpHeaders();
             header.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"));

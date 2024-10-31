@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,9 +28,7 @@ public final class ChangeLogBuilder {
                         build("Resultado General", original.getResultadoGeneral(), updated.getResultadoGeneral(), updated, original, user, updateDate),
                         build("Comentario", original.getComentario(), updated.getComentario(), updated, original, user, updateDate),
                         build("Enlace", original.getEnlace(), updated.getEnlace(), updated, original, user, updateDate)
-                ).filter(changeLog -> ObjectUtils.isNotEmpty(changeLog.getOriginal()) &&
-                        ObjectUtils.isNotEmpty(changeLog.getUpdated()) &&
-                        !changeLog.getOriginal().equals(changeLog.getUpdated()))
+                ).filter(changeLog -> !Objects.equals(changeLog.getOriginal(), changeLog.getUpdated()))
                 .collect(Collectors.toList());
     }
 
