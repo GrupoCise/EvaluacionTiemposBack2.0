@@ -84,6 +84,39 @@ public final class EvaluationMapper {
                 evaluation.getPayroll());
     }
 
+    public static Evaluation mapFromTimeSheetUpdate(Evaluation original, String resultadoGeneral, String horario) {
+        return toEvaluation(
+                original.getFecha(),
+                original.getId(),
+                original.getHoraEntrada(),
+                original.getHoraPausa(),
+                original.getHoraRegresoPausa(),
+                original.getHoraSalida(),
+                original.getResultadoEntrada(),
+                original.getResultadoPausa(),
+                original.getResultadoRegresoPausa(),
+                original.getResultadoSalida(),
+                resultadoGeneral,
+                original.getStatusRegistro(),
+                original.getNumEmpleado(),
+                horario,
+                original.getComentario(),
+                original.getEnlace(),
+                original.getHorasExtra(),
+                original.getHorasTomadas(),
+                original.getPayload(),
+                original.getAreaNomina(),
+                original.getSociedad(),
+                original.getTipoHrsExtra(),
+                original.getReferencia(),
+                original.getConsecutivo1(),
+                original.getConsecutivo2(),
+                original.getApprobationLevel(),
+                original.getTurn(),
+                original.getEmployeeName(),
+                original.getPayroll());
+    }
+
     public static Evaluation toEvaluation(LocalDate fecha, Integer id, Time horaEntrada, Time horaPausa, Time horaRegresoPausa, Time horaSalida, String resultadoEntrada, String resultadoPausa, String resultadoRegresoPausa, String resultadoSalida, String resultadoGeneral, String statusRegistro, String numEmpleado, String horario, String comentario, String enlace, Short horasExtra, Short horasTomadas, Map<String, Object> payload, String areaNomina, String sociedad, String tipoHrsExtra, String referencia, String consecutivo1, String consecutivo2, Integer approbationLevel, Integer turn, String employeeName, String payroll) {
         var evaluation = new Evaluation();
 

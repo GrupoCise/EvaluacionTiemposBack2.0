@@ -17,7 +17,6 @@ import com.web.back.model.responses.CustomResponse;
 import com.web.back.repositories.EvaluationRepository;
 import com.web.back.repositories.UserRepository;
 import com.web.back.utils.DateUtil;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -98,53 +97,50 @@ public class EvaluationService {
 
         var persistedEmployees = evaluationRepository.findAllById(updatedEvaluations.stream().map(EvaluationDto::getId).toList());
 
-        var cambioHorariosResponse = applyCambiosDeHorario(persistedEmployees, updatedEvaluations, request.getBeginDate(), request.getEndDate());
-
-        if (cambioHorariosResponse.isError()) {
-            return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
-        }
-
-        mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), updatedEvaluations);
-
+        List<Evaluation> evaluationEntities;
         List<ChangeLog> changesSummary = new ArrayList<>();
 
-        var evaluationEntities = updatedEvaluations.stream().map(updated -> {
-            var original = persistedEmployees.stream().filter(f -> f.getId().equals(updated.getId())).findFirst().orElseThrow();
+        if(request.getIsTimesheetUpdateOnly()){
+            var cambioHorariosResponse = applyCambiosDeHorario(persistedEmployees, updatedEvaluations, request.getEndDate());
 
-            changesSummary.addAll(ChangeLogBuilder.buildFrom(original, updated, user));
+            if (cambioHorariosResponse.isError()) {
+                return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
+            }
 
-            return EvaluationMapper.mapFrom(updated, original);
-        }).toList();
+            evaluationEntities = mapAuthorizedCambiosHorario(cambioHorariosResponse.getData(), persistedEmployees);
 
-        evaluationRepository.saveAll(evaluationEntities);
+            evaluationEntities.forEach(updated -> {
+                var original = persistedEmployees.stream().filter(f -> f.getId().equals(updated.getId())).findFirst().orElseThrow();
 
-        changeLogService.LogUpdateEvaluationsChanges(changesSummary);
+                changesSummary.addAll(ChangeLogBuilder.buildFrom(original, updated, user));
+            });
+        }else{
+            evaluationEntities = updatedEvaluations.stream().map(updated -> {
+                var original = persistedEmployees.stream().filter(f -> f.getId().equals(updated.getId())).findFirst().orElseThrow();
 
-        return new CustomResponse<List<EvaluationDto>>().ok(updatedEvaluations);
-    }
+                changesSummary.addAll(ChangeLogBuilder.buildFrom(original, updated, user));
 
-    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<Evaluation> employees, List<EvaluationDto> updatedEmployees, String beginDate, String endDate) {
-        var updatesToApply = employees.stream()
-                .flatMap(current -> updatedEmployees.stream()
-                        .filter(updated -> current.getNumEmpleado().equals(updated.getNumEmpleado()))
-                        .filter(updated -> (current.getHorario() == null && updated.getHorario() != null) ||
-                                (current.getHorario() != null &&
-                                        !current.getHorario().equals(updated.getHorario())
-                                ))
-                        .filter(updated -> DateUtil.toStringYYYYMMDD(current.getFecha())
-                                .equals(DateUtil.toStringYYYYMMDD(updated.getFecha())))
-                        .filter(updated -> current.getTurn() != null &&
-                                current.getTurn().equals(updated.getTurn()))
-                        .limit(1)).map(employee ->
-                        new CambioHorarioRequest(employee.getNumEmpleado(),
-                                DateUtil.toStringYYYYMMDD(employee.getFecha()),
-                                employee.getHorario())).toList();
-
-        if (updatesToApply.isEmpty()) {
-            return new CustomResponse<List<CambioHorarioResponse>>().ok(null);
+                return EvaluationMapper.mapFrom(updated, original);
+            }).toList();
         }
 
-        return zwshrEvaluacioClient.postCambioHorario(beginDate, endDate, updatesToApply)
+        evaluationRepository.saveAll(evaluationEntities);
+        changeLogService.LogUpdateEvaluationsChanges(changesSummary);
+
+        return new CustomResponse<List<EvaluationDto>>().ok(
+                evaluationEntities.stream().map(EvaluationDtoMapper::mapFrom).toList()
+        );
+    }
+
+    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<Evaluation> employees, List<EvaluationDto> updatedEmployees, String endDate) {
+        var employee = updatedEmployees.get(0);
+        var startDate = DateUtil.toStringYYYYMMDD(employee.getFecha());
+
+        var timeSheetUpdate = new CambioHorarioRequest(employee.getNumEmpleado(), startDate, employee.getHorario());
+
+        var updatesToApply = List.of(timeSheetUpdate);
+
+        return zwshrEvaluacioClient.postCambioHorario(startDate, endDate, updatesToApply)
                 .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(
                         result.stream().filter(f -> f.empleado() != null && f.fecha() != null &&
                                 updatesToApply.stream().anyMatch(a ->
@@ -153,19 +149,30 @@ public class EvaluationService {
                                                 a.fecha().equals(f.empleado()))).toList())).block();
     }
 
-    private void mapAuthorizedCambiosHorario(List<CambioHorarioResponse> cambioHorarios, List<EvaluationDto> updatedEvaluations) {
-        if (cambioHorarios == null || cambioHorarios.isEmpty()) return;
+    private List<Evaluation> mapAuthorizedCambiosHorario(List<CambioHorarioResponse> cambioHorarios, List<Evaluation> persistedEmployees) {
+        List<Evaluation> affectedEmployees = new ArrayList<>();
 
-        for (EvaluationDto evaluationDto : updatedEvaluations) {
+        if (cambioHorarios == null || cambioHorarios.isEmpty()) return affectedEmployees;
+
+        for (Evaluation evaluation : persistedEmployees) {
             var affectedRegistryForEmployee = cambioHorarios.stream()
-                    .filter(f -> Objects.equals(f.empleado(), evaluationDto.getNumEmpleado()))
-                    .filter(f -> f.fecha().equals(DateUtil.toStringYYYYMMDD(evaluationDto.getFecha())))
+                    .filter(f -> Objects.equals(f.empleado(), evaluation.getNumEmpleado()))
+                    .filter(f -> f.fecha().equals(DateUtil.toStringYYYYMMDD(evaluation.getFecha())))
                     .findFirst();
 
             if (affectedRegistryForEmployee.isPresent()) {
-                evaluationDto.setHorario(affectedRegistryForEmployee.get().horario());
-                evaluationDto.setResultadoGeneral(affectedRegistryForEmployee.get().estatusGen());
+                evaluation.setHorario(affectedRegistryForEmployee.get().horario());
+                evaluation.setResultadoGeneral(affectedRegistryForEmployee.get().estatusGen());
+
+                affectedEmployees.add(
+                        EvaluationMapper.mapFromTimeSheetUpdate(
+                        evaluation,
+                        affectedRegistryForEmployee.get().horario(),
+                        affectedRegistryForEmployee.get().estatusGen())
+                );
             }
         }
+
+        return affectedEmployees;
     }
 }

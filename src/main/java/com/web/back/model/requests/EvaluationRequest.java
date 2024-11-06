@@ -23,4 +23,5 @@ public class EvaluationRequest {
     private String endDate;
     private String areaNomina;
     private String sociedad;
+    private Boolean isTimesheetUpdateOnly;
 }
