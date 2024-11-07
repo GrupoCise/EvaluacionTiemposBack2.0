@@ -95,13 +95,13 @@ public class EvaluationService {
             return new CustomResponse<List<EvaluationDto>>().ok(null, "No hay cambios que actualizar");
         }
 
-        var persistedEmployees = evaluationRepository.findAllById(updatedEvaluations.stream().map(EvaluationDto::getId).toList());
-
+        List<Evaluation> persistedEmployees;
         List<Evaluation> evaluationEntities;
         List<ChangeLog> changesSummary = new ArrayList<>();
 
-        if(request.getIsTimesheetUpdateOnly()){
-            var cambioHorariosResponse = applyCambiosDeHorario(persistedEmployees, updatedEvaluations, request.getEndDate());
+        if (request.getIsTimesheetUpdateOnly()) {
+            persistedEmployees = evaluationRepository.findAllByEmployeeNumber(updatedEvaluations.stream().map(EvaluationDto::getNumEmpleado).toList());
+            var cambioHorariosResponse = applyCambiosDeHorario(updatedEvaluations, request.getEndDate());
 
             if (cambioHorariosResponse.isError()) {
                 return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
@@ -114,7 +114,8 @@ public class EvaluationService {
 
                 changesSummary.addAll(ChangeLogBuilder.buildFrom(original, updated, user));
             });
-        }else{
+        } else {
+            persistedEmployees = evaluationRepository.findAllById(updatedEvaluations.stream().map(EvaluationDto::getId).toList());
             evaluationEntities = updatedEvaluations.stream().map(updated -> {
                 var original = persistedEmployees.stream().filter(f -> f.getId().equals(updated.getId())).findFirst().orElseThrow();
 
@@ -132,7 +133,7 @@ public class EvaluationService {
         );
     }
 
-    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<Evaluation> employees, List<EvaluationDto> updatedEmployees, String endDate) {
+    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<EvaluationDto> updatedEmployees, String endDate) {
         var employee = updatedEmployees.get(0);
         var startDate = DateUtil.toStringYYYYMMDD(employee.getFecha());
 
@@ -141,12 +142,7 @@ public class EvaluationService {
         var updatesToApply = List.of(timeSheetUpdate);
 
         return zwshrEvaluacioClient.postCambioHorario(startDate, endDate, updatesToApply)
-                .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(
-                        result.stream().filter(f -> f.empleado() != null && f.fecha() != null &&
-                                updatesToApply.stream().anyMatch(a ->
-                                        a.empleado() != null && a.fecha() != null &&
-                                                a.empleado().equals(f.empleado()) &&
-                                                a.fecha().equals(f.empleado()))).toList())).block();
+                .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(result)).block();
     }
 
     private List<Evaluation> mapAuthorizedCambiosHorario(List<CambioHorarioResponse> cambioHorarios, List<Evaluation> persistedEmployees) {
@@ -160,17 +156,14 @@ public class EvaluationService {
                     .filter(f -> f.fecha().equals(DateUtil.toStringYYYYMMDD(evaluation.getFecha())))
                     .findFirst();
 
-            if (affectedRegistryForEmployee.isPresent()) {
-                evaluation.setHorario(affectedRegistryForEmployee.get().horario());
-                evaluation.setResultadoGeneral(affectedRegistryForEmployee.get().estatusGen());
-
-                affectedEmployees.add(
-                        EvaluationMapper.mapFromTimeSheetUpdate(
-                        evaluation,
-                        affectedRegistryForEmployee.get().horario(),
-                        affectedRegistryForEmployee.get().estatusGen())
-                );
-            }
+            affectedRegistryForEmployee.ifPresent(cambioHorarioResponse ->
+                    affectedEmployees.add(
+                            EvaluationMapper.mapFromTimeSheetUpdate(
+                                    evaluation,
+                                    cambioHorarioResponse.estatusGen(),
+                                    cambioHorarioResponse.horario()
+                            )
+                    ));
         }
 
         return affectedEmployees;

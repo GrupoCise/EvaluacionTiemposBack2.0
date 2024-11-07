@@ -36,4 +36,9 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
     )
     List<Evaluation> findByFechaAndTurn(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("turn") Integer turn);
 
+    @Query(
+            value = "SELECT * FROM evaluation WHERE num_empleado in :employee_numbers order by fecha",
+            nativeQuery = true
+    )
+    List<Evaluation> findAllByEmployeeNumber(@Param("employee_numbers") List<String> employeeNumbers);
 }
