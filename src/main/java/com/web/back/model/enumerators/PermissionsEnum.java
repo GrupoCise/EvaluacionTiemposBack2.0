@@ -12,5 +12,6 @@ public enum PermissionsEnum {
     APPROVE,
     SEND_TO_SAP,
     REGISTER_TIMESHEETS,
-    READ_LOGS
+    READ_LOGS,
+    CARGAR_MARCAJES
 }

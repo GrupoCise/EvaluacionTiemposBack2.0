@@ -1,9 +1,6 @@
 package com.web.back.clients;
 
-import com.web.back.model.requests.CambioHorarioRequest;
-import com.web.back.model.requests.PostEvaluationApiRequest;
-import com.web.back.model.requests.RegistroHorariosRequest;
-import com.web.back.model.requests.RegistroTiemposRequest;
+import com.web.back.model.requests.*;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.RegistroHorariosResponse;
 import com.web.back.model.responses.RegistroTiemposResponse;
@@ -146,6 +143,20 @@ public class ZWSHREvaluacioClient {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {
                 });
+    }
+
+    public Mono<ResponseEntity<Void>> registerEntryAndExitMarks(List<EntryExitMarkRequest> entryAndExitMarks) {
+        var authHeaders = getAuthRequirements();
+
+        return webClient.post()
+                .uri("/Empleados?SAP-CLIENT=" + sapClient)
+                .header("Authorization", getBasicAuthHeaderString())
+                .header("X-CSRF-Token", authHeaders.getT1())
+                .header("Cookie", authHeaders.getT2())
+                .bodyValue(entryAndExitMarks)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     private Tuple2<String, String> getAuthRequirements(){

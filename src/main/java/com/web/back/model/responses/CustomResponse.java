@@ -19,6 +19,10 @@ public class CustomResponse<T> {
         return new CustomResponse<>(null, true, 400, errorMessage);
     }
 
+    public CustomResponse<T> unAuthorized(String errorMessage) {
+        return new CustomResponse<>(null, true, 401, errorMessage);
+    }
+
     public CustomResponse<T> badRequest(T value, String errorMessage) {
         return new CustomResponse<>(value, true, 400, errorMessage);
     }
