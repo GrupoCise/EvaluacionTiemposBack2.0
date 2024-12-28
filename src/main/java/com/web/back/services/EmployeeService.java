@@ -2,6 +2,7 @@ package com.web.back.services;
 
 import com.web.back.clients.ZWSHREvaluacioClient;
 import com.web.back.mappers.*;
+import com.web.back.model.dto.ABCEmployeeDTO;
 import com.web.back.model.dto.EvaluationDto;
 import com.web.back.model.dto.EvaluationsDataDto;
 import com.web.back.model.dto.RegistroTiemposDto;
@@ -128,6 +129,10 @@ public class EmployeeService {
         }
 
         return bos.toByteArray();
+    }
+
+    public List<ABCEmployeeDTO> getABCEmployees(String carga, String beginDate, String endDate) {
+        return zwshrEvaluacioClient.getABCEmployees(carga, beginDate, endDate).block();
     }
 
     private void processEmployee(List<EvaluationDto> evaluationDtos, List<Evaluation> existentEmployees, EmployeeApiResponse employee,

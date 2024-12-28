@@ -1,5 +1,6 @@
 package com.web.back.clients;
 
+import com.web.back.model.dto.ABCEmployeeDTO;
 import com.web.back.model.requests.*;
 import com.web.back.model.responses.EmployeeApiResponse;
 import com.web.back.model.responses.RegistroHorariosResponse;
@@ -157,6 +158,19 @@ public class ZWSHREvaluacioClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    public Mono<List<ABCEmployeeDTO>> getABCEmployees(String carga, String beginDate, String endDate) {
+        beginDate = DateUtil.clearSymbols(beginDate);
+        endDate = DateUtil.clearSymbols(endDate);
+
+        return webClient.get()
+                .uri("/ABCEmpleados?sap-client=" + sapClient + "&I_CARGA=" + carga + "&I_BEGDA=" + beginDate + "&I_ENDDA=" + endDate)
+                .header("Authorization", getBasicAuthHeaderString())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
     }
 
     private Tuple2<String, String> getAuthRequirements(){
