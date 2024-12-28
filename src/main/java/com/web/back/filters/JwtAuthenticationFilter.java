@@ -52,25 +52,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            final String username = jwtService.getUsernameFromToken(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                User userDetails = (User) userDetailsService.loadUserByUsername(username);
+            try {
+                final String username = jwtService.getUsernameFromToken(token);
 
-                if (jwtService.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    User userDetails = (User) userDetailsService.loadUserByUsername(username);
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, null);
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            }catch (Exception e){
+                processAuthException(response);
             }
 
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException ex) {
             processExpiredJwtException(response);
         } catch (Exception e) {
-            processException(response);
+            processException(response, e);
         }
     }
 
@@ -86,13 +91,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         objectMapper.writeValue(response.getWriter(), customResponse);
     }
 
-    private void processException(HttpServletResponse response) throws IOException {
+    private void processAuthException(HttpServletResponse response) throws IOException {
         CustomResponse<String> customResponse = new CustomResponse<>();
         customResponse.setError(true);
         customResponse.setStatusCode(HttpStatus.UNAUTHORIZED.value());
         customResponse.setMessage("Error desconocido de autenticación");
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(response.getWriter(), customResponse);
+    }
+
+    private void processException(HttpServletResponse response, Exception exception) throws IOException {
+        CustomResponse<String> customResponse = new CustomResponse<>();
+        customResponse.setError(true);
+        customResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        customResponse.setMessage(exception.getMessage());
+
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(response.getWriter(), customResponse);
