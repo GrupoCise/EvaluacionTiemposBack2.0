@@ -16,6 +16,7 @@ public record ABCEmployeeDTO(
         String curp,
         String rfc,
         String imss,
-        String tzone
+        String tzone,
+        String status
 ) {
 }
