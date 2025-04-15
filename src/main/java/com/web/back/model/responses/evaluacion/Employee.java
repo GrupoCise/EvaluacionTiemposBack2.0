@@ -16,4 +16,5 @@ public class Employee {
     private String nombre;
     private String rphtSap;
     private String vdsk1;
+    private String stextPos;
 }
