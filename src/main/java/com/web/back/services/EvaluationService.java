@@ -101,7 +101,7 @@ public class EvaluationService {
 
         if (request.getIsTimesheetUpdateOnly()) {
             persistedEmployees = evaluationRepository.findAllByEmployeeNumber(updatedEvaluations.stream().map(EvaluationDto::getNumEmpleado).toList());
-            var cambioHorariosResponse = applyCambiosDeHorario(updatedEvaluations, request.getEndDate());
+            var cambioHorariosResponse = applyCambiosDeHorario(updatedEvaluations);
 
             if (cambioHorariosResponse.isError()) {
                 return new CustomResponse<List<EvaluationDto>>().badRequest("Error al aplicar cambio de Horario");
@@ -133,15 +133,15 @@ public class EvaluationService {
         );
     }
 
-    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<EvaluationDto> updatedEmployees, String endDate) {
+    private CustomResponse<List<CambioHorarioResponse>> applyCambiosDeHorario(List<EvaluationDto> updatedEmployees) {
         var employee = updatedEmployees.get(0);
-        var startDate = DateUtil.toStringYYYYMMDD(employee.getFecha());
+        var dateTimesheetChange = DateUtil.toStringYYYYMMDD(employee.getFecha());
 
-        var timeSheetUpdate = new CambioHorarioRequest(employee.getNumEmpleado(), startDate, employee.getHorario());
+        var timeSheetUpdate = new CambioHorarioRequest(employee.getNumEmpleado(), dateTimesheetChange, employee.getHorario());
 
         var updatesToApply = List.of(timeSheetUpdate);
 
-        return zwshrEvaluacioClient.postCambioHorario(startDate, endDate, updatesToApply)
+        return zwshrEvaluacioClient.postCambioHorario(dateTimesheetChange, dateTimesheetChange, updatesToApply)
                 .map(result -> new CustomResponse<List<CambioHorarioResponse>>().ok(result)).block();
     }
 
