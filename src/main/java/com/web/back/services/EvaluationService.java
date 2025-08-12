@@ -44,6 +44,12 @@ public class EvaluationService {
                 .map(EvaluationDtoMapper::mapFrom).toList();
     }
 
+    public List<EvaluationDto> getAllEvaluationsByFilters(String beginDate, String endDate, String sociedad, String areaNomina) {
+        return evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina)
+                .stream()
+                .map(EvaluationDtoMapper::mapFrom).toList();
+    }
+
     @Transactional(rollbackFor = {Exception.class})
     public Void deleteEvaluations(List<Integer> evaluationsToRemove) {
         if (evaluationsToRemove.isEmpty()) {

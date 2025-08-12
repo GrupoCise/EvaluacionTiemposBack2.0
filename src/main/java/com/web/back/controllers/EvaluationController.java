@@ -63,6 +63,16 @@ public class EvaluationController {
         return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().ok(evaluationService.getAllEvaluations()));
     }
 
+    @GetMapping(value = "evaluations/filtered")
+    public ResponseEntity<CustomResponse<List<EvaluationDto>>> getAllEmployeeEvaluationsByFilters(@RequestHeader("Authorization") String bearerToken,
+                                                                                                  String beginDate, String endDate, String sociedad, String areaNomina) {
+        if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
+            return ResponseEntity.status(401).build();
+        }
+
+        return ResponseEntity.ok(new CustomResponse<List<EvaluationDto>>().ok(evaluationService.getAllEvaluationsByFilters(beginDate, endDate, sociedad, areaNomina)));
+    }
+
     @DeleteMapping(value = "evaluations")
     public ResponseEntity<CustomResponse<Void>> deleteEvaluations(@RequestHeader("Authorization") String bearerToken, @RequestBody List<Integer> evaluationsToRemove) {
         if (!PermissionsFilter.isSuperUser(jwtService.getPermissionsFromToken(bearerToken))) {
