@@ -9,7 +9,6 @@ import com.web.back.services.JwtService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/auth")
@@ -44,7 +43,7 @@ public class AuthController {
 
 
     @PostMapping("/changePassword")
-    public Mono<CustomResponse<String>> changePassword(@RequestBody LoginRequest request) {
+    public CustomResponse<String> changePassword(@RequestBody LoginRequest request) {
         return authService.changePassword(request);
     }
 }

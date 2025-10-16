@@ -12,7 +12,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -70,12 +69,12 @@ public class AuthService {
 
 
     @Transactional
-    public Mono<CustomResponse<String>> changePassword(LoginRequest request) {
+    public CustomResponse<String> changePassword(LoginRequest request) {
         try {
-            return userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()))
-                    .map(result -> new CustomResponse<String>().ok(result));
+            var result = userService.updatePassword(request.getUsername(), passwordEncoder.encode(request.getPassword()));
+            return new CustomResponse<String>().ok(result);
         } catch (NoSuchElementException e) {
-            return Mono.just(new CustomResponse<String>().badRequest("User doesn't exist"));
+            return new CustomResponse<String>().badRequest("User doesn't exist");
         }
     }
 

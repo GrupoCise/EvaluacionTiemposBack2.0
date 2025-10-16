@@ -17,22 +17,24 @@ import com.web.back.model.responses.CustomResponse;
 import com.web.back.repositories.EvaluationRepository;
 import com.web.back.repositories.UserRepository;
 import com.web.back.utils.DateUtil;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class EvaluationService {
+public class SapEvaluationService {
     private final UserRepository userRepository;
     private final EvaluationRepository evaluationRepository;
     private final ZWSHREvaluacioClient zwshrEvaluacioClient;
     private final ChangeLogService changeLogService;
 
-    public EvaluationService(UserRepository userRepository, EvaluationRepository evaluationRepository, ZWSHREvaluacioClient zwshrEvaluacioClient, ChangeLogService changeLogService) {
+    public SapEvaluationService(UserRepository userRepository, EvaluationRepository evaluationRepository, ZWSHREvaluacioClient zwshrEvaluacioClient, ChangeLogService changeLogService) {
         this.userRepository = userRepository;
         this.evaluationRepository = evaluationRepository;
         this.zwshrEvaluacioClient = zwshrEvaluacioClient;
@@ -64,8 +66,9 @@ public class EvaluationService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public void sendApprovedEvaluationsToSap(String beginDate, String endDate, String sociedad, String areaNomina) {
+    public void sendApprovedEvaluationsToSap(String username, String beginDate, String endDate, String sociedad, String areaNomina) {
         var evaluations = evaluationRepository.findByFechaAndAreaNominaAndSociedad(beginDate, endDate, sociedad, areaNomina);
+        var user = userRepository.findByUsername(username).orElseThrow();
 
         evaluations = evaluations.stream()
                 .filter(evaluation -> evaluation.getApprobationLevel() != null &&
@@ -82,9 +85,32 @@ public class EvaluationService {
         var response = zwshrEvaluacioClient.postEvaluation(request).block();
 
         if (response != null && response.getStatusCode().is2xxSuccessful()) {
-            evaluations.forEach(evaluation -> evaluation.setStatusRegistro(StatusRegistroEnum.SENT_TO_SAP.name()));
+            List<ChangeLog> changesSummary = new ArrayList<>();
+
+            evaluations.forEach(evaluation -> {
+                var previousValue = ObjectUtils.isNotEmpty(evaluation.getStatusRegistro()) ? evaluation.getStatusRegistro() : null;
+                evaluation.setStatusRegistro(StatusRegistroEnum.SENT_TO_SAP.name());
+
+                ChangeLog changeLog = new ChangeLog();
+
+                changeLog.setField("Status Registro");
+                changeLog.setOriginal(previousValue);
+                changeLog.setUpdated(evaluation.getStatusRegistro());
+                changeLog.setNumEmpleado(evaluation.getNumEmpleado());
+                changeLog.setEmpleadoName(evaluation.getEmployeeName());
+                changeLog.setEvaluationId(evaluation.getId());
+                changeLog.setEditorUserName(user.getUsername());
+                changeLog.setEditorName(user.getName());
+                changeLog.setSociedad(evaluation.getSociedad());
+                changeLog.setAreaNomina(evaluation.getAreaNomina());
+                changeLog.setUpdatedOn(Instant.now());
+
+                changesSummary.add(changeLog);
+            });
 
             evaluationRepository.saveAll(evaluations);
+
+            changeLogService.LogUpdateEvaluationsChanges(changesSummary);
         }
 
         if (response != null && !response.getStatusCode().is2xxSuccessful()) {

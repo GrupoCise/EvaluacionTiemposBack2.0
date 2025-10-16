@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,4 +42,6 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Integer>
             nativeQuery = true
     )
     List<Evaluation> findAllByEmployeeNumber(@Param("employee_numbers") List<String> employeeNumbers);
+
+    List<Evaluation> findAllByFechaBetween(LocalDate beginDate, LocalDate endDate);
 }

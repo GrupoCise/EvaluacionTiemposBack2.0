@@ -83,3 +83,45 @@ CREATE TABLE groupers_configurations (
                                          short_name VARCHAR(50) NOT NULL,
                                          visible BOOLEAN NOT NULL
 );
+
+
+CREATE TABLE time_records (
+                              id CHAR(36) PRIMARY KEY,
+                              employee_id CHAR(36) NOT NULL,
+                              turn INT NOT NULL,
+                              entry_time TIME,
+                              break_departure_time TIME,
+                              break_return_time TIME,
+                              departure_time TIME,
+                              CONSTRAINT fk_time_records_employee FOREIGN KEY (employee_id) REFERENCES employee(id)
+);
+
+CREATE TABLE time_rules (
+                       id CHAR(36) PRIMARY KEY,
+                       description VARCHAR(255),
+                       level INT,
+                       sequence INT,
+                       rule VARCHAR(255),
+                       result_meets VARCHAR(10),
+                       exclusive BOOLEAN
+);
+
+
+CREATE TABLE timesheet_time_rule (
+                                     timesheet_id CHAR(36) NOT NULL,
+                                     time_rule_id CHAR(36) NOT NULL,
+                                     PRIMARY KEY (timesheet_id, time_rule_id),
+                                     CONSTRAINT fk_timesheet_time_rule_timesheet FOREIGN KEY (timesheet_id) REFERENCES timesheets(id),
+                                     CONSTRAINT fk_timesheet_time_rule_time_rule FOREIGN KEY (time_rule_id) REFERENCES time_rules(id)
+);
+
+CREATE TABLE periods (
+    id SERIAL PRIMARY KEY,
+    grouper_1 VARCHAR(50),
+    grouper_2 VARCHAR(50),
+    grouper_3 VARCHAR(50),
+    grouper_4 VARCHAR(50),
+    grouper_5 VARCHAR(50),
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL
+);

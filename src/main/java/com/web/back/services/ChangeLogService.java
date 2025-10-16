@@ -64,6 +64,8 @@ public class ChangeLogService {
 
     @Transactional
     public void LogUpdateEvaluationsChanges(List<ChangeLog> changesSummary){
+        if (changesSummary == null || changesSummary.isEmpty()) return;
+
         changeLogRepository.saveAll(changesSummary);
     }
 }

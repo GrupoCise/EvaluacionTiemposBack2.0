@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
+        <version>3.3.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>6.3.3</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -86,12 +85,12 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.3.0</version>
+            <version>5.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.3.0</version>
+            <version>5.4.1</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
@@ -115,6 +114,11 @@
             <version>6.5.0.Final</version>
         </dependency>
 
+        <dependency>
+           <groupId>org.apache.commons</groupId>
+           <artifactId>commons-jexl3</artifactId>
+           <version>3.2</version>
+        </dependency>
     </dependencies>
 
     <build>

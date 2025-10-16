@@ -9,7 +9,6 @@ import com.web.back.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -63,50 +62,46 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<User> update(Integer id, UserUpdateRequest userUpdate) {
+    public User update(Integer id, UserUpdateRequest userUpdate) {
         User user = userRepository.findById(id).get();
         user = userUpdate.changeUser(user);
 
         saveUserProfiles(user, userUpdate.getProfiles());
 
-        return Mono.just(user);
+        return user;
     }
 
     @Transactional
-    public Mono<List<User>> getAll() {
-        return Mono.just(userRepository.findAll());
+    public List<User> getAll() {
+        return userRepository.findAll();
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<User> updateStatus(String userName, boolean isActive) {
+    public User updateStatus(String userName, boolean isActive) {
         Optional<User> userOptional = userRepository.findByUsername(userName);
 
-        userOptional.ifPresent(user -> {
-            user.setActive(isActive);
-        });
+        userOptional.ifPresent(user -> user.setActive(isActive));
 
         userRepository.save(userOptional.get());
 
-        return Mono.just(userOptional.get());
+        return userOptional.get();
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<String> updatePassword(String userName, String newPassword) {
+    public String updatePassword(String userName, String newPassword) {
         User user = userRepository.findByUsername(userName).orElseThrow();
 
         user.setPassword(newPassword);
         userRepository.save(user);
 
-        return Mono.just("Password Changed");
+        return "Password Changed";
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public Mono<String> deleteUser(Integer id) {
+    public void deleteUser(Integer id) {
         var user = userRepository.findById(id).orElseThrow();
 
         userRepository.delete(user);
-
-        return Mono.just("Password Changed");
     }
 
     @Transactional

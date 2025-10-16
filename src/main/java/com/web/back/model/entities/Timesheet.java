@@ -47,4 +47,18 @@ public class Timesheet {
 
     @Column(name = "departure_time")
     private LocalTime departureTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Timesheet timesheet = (Timesheet) o;
+        return id != null && id.equals(timesheet.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
 }
